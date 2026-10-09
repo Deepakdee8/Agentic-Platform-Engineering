@@ -1,0 +1,1424 @@
+[
+  {
+    "rank": 1,
+    "scenario_key": "fw-open-ssh",
+    "finding_id": "SCC-FW-99201",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "FIREWALL_OPEN_INGRESS",
+    "service": "VPC & Compute Engine",
+    "resource_name": "allow-ssh-ingress",
+    "resource_id": "projects/payments-prod-vpc/global/firewalls/allow-ssh-ingress",
+    "resource_type": "compute.googleapis.com/Firewall",
+    "project_id": "payments-prod-vpc",
+    "environment": "production",
+    "region": "global",
+    "severity": "CRITICAL",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 3.6",
+    "policy_id": "POL-CIS-GCP-3.6",
+    "description": "Firewall rule permits unrestricted inbound SSH traffic (port 22) from public internet (0.0.0.0/0).",
+    "prompt": "Remediate finding #SCC-FW-99201: Firewall rule allow-ssh-ingress permits unrestricted ingress port 22 from 0.0.0.0/0.",
+    "risk_assessment": {
+      "score": 98,
+      "risk_level": "CRITICAL",
+      "blast_radius": {
+        "affected_services_count": 8,
+        "direct_dependencies": ["payments-vpc", "kubernetes-node-pool", "bastion-host", "payment-api-worker"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: FIREWALL_OPEN_INGRESS (criticality: 75)",
+        "Affects inbound traffic routing for 8 production backend nodes",
+        "Public exposure to active automated botnet scanning"
+      ],
+      "rationale": "Direct public SSH ingress on production VPC exposes critical backend infrastructure to brute force and protocol exploits. Requires immediate gating and remediation."
+    },
+    "current_state": {
+      "source_ranges": ["0.0.0.0/0"],
+      "allowed": [{ "IPProtocol": "tcp", "ports": ["22"] }],
+      "target_tags": ["production-backend"]
+    },
+    "proposed_state": {
+      "source_ranges": ["35.235.240.0/20"],
+      "allowed": [{ "IPProtocol": "tcp", "ports": ["22"] }],
+      "target_tags": ["production-backend"],
+      "description": "Restricted SSH ingress via Google Cloud Identity-Aware Proxy (IAP)"
+    },
+    "technical_diff": {
+      "deletions": "- source_ranges: [\"0.0.0.0/0\"]",
+      "additions": "+ source_ranges: [\"35.235.240.0/20\"] # Google Cloud IAP CIDR",
+      "summary": "Restricts SSH ingress strictly to Google Cloud Identity-Aware Proxy tunnel."
+    },
+    "remediation": {
+      "action_title": "Restrict Inbound SSH Rule to Google Identity-Aware Proxy (IAP) CIDR",
+      "rationale": "CIS GCP Benchmark 3.6 mandates blocking 0.0.0.0/0 SSH. Google Cloud IAP (35.235.240.0/20) enforces contextual IAM authentication without public exposure.",
+      "tool_name": "gcp_firewall_restrict_ssh_ingress",
+      "tool_parameters": {
+        "firewall_rule_name": "allow-ssh-ingress",
+        "allowed_cidrs": ["35.235.240.0/20"]
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Cloud-Security-Lead", "Network-Admin", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "rule_name": "allow-ssh-ingress",
+          "source_ranges": ["0.0.0.0/0"]
+        },
+        "steps": [
+          "Fetch cached firewall snapshot from metadata store",
+          "Re-apply original source ranges using compute.firewalls.update API"
+        ],
+        "estimated_recovery_time_seconds": 15
+      },
+      "validation_probe": "gcloud compute firewall-rules describe allow-ssh-ingress --format='value(sourceRanges)'"
+    }
+  },
+  {
+    "rank": 2,
+    "scenario_key": "gke-public-endpoint",
+    "finding_id": "SCC-GKE-30192",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "GKE_PUBLIC_ENDPOINT",
+    "service": "Google Kubernetes Engine (GKE)",
+    "resource_name": "payments-gke-prod",
+    "resource_id": "projects/payments-prod/zones/us-central1-a/clusters/payments-gke-prod",
+    "resource_type": "container.googleapis.com/Cluster",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "CRITICAL",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 4.1",
+    "policy_id": "POL-CIS-GCP-4.1",
+    "description": "GKE cluster master authorized networks permits unrestricted public access (0.0.0.0/0).",
+    "prompt": "Remediate finding #SCC-GKE-30192: GKE cluster payments-gke-prod has control plane exposed to public internet.",
+    "risk_assessment": {
+      "score": 96,
+      "risk_level": "CRITICAL",
+      "blast_radius": {
+        "affected_services_count": 14,
+        "direct_dependencies": ["payments-api", "transaction-engine", "ledger-sync", "ingress-gateway"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: GKE_PUBLIC_ENDPOINT (criticality: 80)",
+        "Affects control plane of primary production transaction cluster",
+        "Kubernetes API server reachable by arbitrary internet addresses"
+      ],
+      "rationale": "An exposed Kubernetes API server allows unauthorized probes and credential stuffing against cluster RBAC. Restricting authorized networks isolates the master control plane."
+    },
+    "current_state": {
+      "master_authorized_networks": ["0.0.0.0/0"],
+      "private_endpoint_enforced": false
+    },
+    "proposed_state": {
+      "master_authorized_networks": ["10.128.0.0/24"],
+      "private_endpoint_enforced": true
+    },
+    "technical_diff": {
+      "deletions": "- master_authorized_networks: [\"0.0.0.0/0\"]\n- private_endpoint_enforced: false",
+      "additions": "+ master_authorized_networks: [\"10.128.0.0/24\"]\n+ private_endpoint_enforced: true",
+      "summary": "Restricts master authorized CIDRs to internal bastion subnet and enables private endpoint."
+    },
+    "remediation": {
+      "action_title": "Restrict GKE Master Authorized Networks to Corporate Bastion Subnet",
+      "rationale": "CIS GCP Benchmark 4.1 requires disabling 0.0.0.0/0 access on GKE master control plane to prevent reconnaissance and cluster-takeover attacks.",
+      "tool_name": "gcp_gke_disable_public_endpoint",
+      "tool_parameters": {
+        "cluster_name": "payments-gke-prod",
+        "authorized_cidrs": ["10.128.0.0/24"]
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["SRE-Principal", "Platform-Owner", "Kubernetes-Lead"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "cluster_name": "payments-gke-prod",
+          "master_authorized_networks": ["0.0.0.0/0"]
+        },
+        "steps": [
+          "Query cluster master authorized networks snapshot",
+          "Revert via container.clusters.update API if management connectivity is broken"
+        ],
+        "estimated_recovery_time_seconds": 30
+      },
+      "validation_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(masterAuthorizedNetworksConfig.cidrBlocks)'"
+    }
+  },
+  {
+    "rank": 3,
+    "scenario_key": "sql-public-ip",
+    "finding_id": "SCC-SQL-77102",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "DATABASE_PUBLIC_IP",
+    "service": "Cloud SQL (PostgreSQL)",
+    "resource_name": "customer-db-pg-prod",
+    "resource_id": "projects/payments-prod/instances/customer-db-pg-prod",
+    "resource_type": "sqladmin.googleapis.com/Instance",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "CRITICAL",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 6.2",
+    "policy_id": "POL-CIS-GCP-6.2",
+    "description": "Cloud SQL instance exposes public IPv4 address with authorized network 0.0.0.0/0.",
+    "prompt": "Remediate finding #SCC-SQL-77102: Cloud SQL instance customer-db-pg-prod has public IP enabled with unrestricted ingress.",
+    "risk_assessment": {
+      "score": 95,
+      "risk_level": "CRITICAL",
+      "blast_radius": {
+        "affected_services_count": 6,
+        "direct_dependencies": ["customer-service", "billing-service", "checkout-api"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 1,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: DATABASE_PUBLIC_IP (criticality: 65)",
+        "Direct exposure of PCI customer cardholder relational database",
+        "Permits ingress on PostgreSQL TCP port 5432 from all internet hosts"
+      ],
+      "rationale": "Public IP on core production relational database violates PCI-DSS 1.3 and CIS GCP 6.2. Enforcing Private Service Access (PSA) isolates DB within private VPC."
+    },
+    "current_state": {
+      "ipv4_enabled": true,
+      "authorized_networks": [{ "value": "0.0.0.0/0", "name": "any" }],
+      "private_network": null
+    },
+    "proposed_state": {
+      "ipv4_enabled": false,
+      "authorized_networks": [],
+      "private_network": "projects/payments-prod-vpc/global/networks/payments-vpc"
+    },
+    "technical_diff": {
+      "deletions": "- ipv4_enabled: true\n- authorized_networks: [{\"value\": \"0.0.0.0/0\"}]\n- private_network: null",
+      "additions": "+ ipv4_enabled: false\n+ authorized_networks: []\n+ private_network: \"projects/payments-prod-vpc/global/networks/payments-vpc\"",
+      "summary": "Revokes public IPv4, clears 0.0.0.0/0 authorized network, binds Private Service Access."
+    },
+    "remediation": {
+      "action_title": "Revoke Public IPv4 & Attach Private Service Access (PSA) on Cloud SQL",
+      "rationale": "Eliminates internet attack surface for PostgreSQL instance while retaining low-latency private connectivity for application pods.",
+      "tool_name": "gcp_sql_enforce_private_ip",
+      "tool_parameters": {
+        "instance_name": "customer-db-pg-prod",
+        "vpc_network": "payments-vpc"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Database-Admin", "Platform-Owner", "Security-Lead"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "instance_name": "customer-db-pg-prod",
+          "ipv4_enabled": true,
+          "authorized_networks": [{ "value": "0.0.0.0/0", "name": "any" }]
+        },
+        "steps": [
+          "Check connectivity on private IP range",
+          "If client disconnect threshold exceeded, rollback IP configuration via sql.instances.patch"
+        ],
+        "estimated_recovery_time_seconds": 30
+      },
+      "validation_probe": "gcloud sql instances describe customer-db-pg-prod --format='value(settings.ipConfiguration.ipv4Enabled)'"
+    }
+  },
+  {
+    "rank": 4,
+    "scenario_key": "bq-public-dataset",
+    "finding_id": "SCC-BQ-89102",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "BIGQUERY_DATASET_PUBLIC",
+    "service": "BigQuery & Analytics",
+    "resource_name": "customer_churn",
+    "resource_id": "projects/analytics-prod/datasets/customer_churn",
+    "resource_type": "bigquery.googleapis.com/Dataset",
+    "project_id": "analytics-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "CRITICAL",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 7.1",
+    "policy_id": "POL-CIS-GCP-7.1",
+    "description": "BigQuery dataset access list grants READER role to allAuthenticatedUsers group.",
+    "prompt": "Remediate finding #SCC-BQ-89102: BigQuery dataset customer_churn shared with allAuthenticatedUsers.",
+    "risk_assessment": {
+      "score": 94,
+      "risk_level": "CRITICAL",
+      "blast_radius": {
+        "affected_services_count": 3,
+        "direct_dependencies": ["churn-predictor-model", "bi-dashboards", "marketing-sync"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: BIGQUERY_DATASET_PUBLIC (criticality: 70)",
+        "Confidential business dataset exposed to any authenticated Google identity globally",
+        "Severe regulatory non-compliance under GDPR and CCPA"
+      ],
+      "rationale": "Sharing datasets with allAuthenticatedUsers allows external third-party Google accounts to query company warehouse tables without enterprise authentication."
+    },
+    "current_state": {
+      "access": [{ "role": "READER", "specialGroup": "allAuthenticatedUsers" }]
+    },
+    "proposed_state": {
+      "access": [{ "role": "READER", "groupByEmail": "data-analysts@enterprise.internal" }]
+    },
+    "technical_diff": {
+      "deletions": "- access: [{\"role\": \"READER\", \"specialGroup\": \"allAuthenticatedUsers\"}]",
+      "additions": "+ access: [{\"role\": \"READER\", \"groupByEmail\": \"data-analysts@enterprise.internal\"}]",
+      "summary": "Revokes public allAuthenticatedUsers; scopes access to verified enterprise analyst group."
+    },
+    "remediation": {
+      "action_title": "Revoke allAuthenticatedUsers from BigQuery Dataset Access Control List",
+      "rationale": "CIS GCP Benchmark 7.1 prohibits public dataset sharing. Restricts access to enterprise Google Workspace group.",
+      "tool_name": "gcp_bigquery_revoke_public_access",
+      "tool_parameters": {
+        "dataset_name": "customer_churn"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Data-Governance-Officer", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "dataset": "customer_churn",
+          "previous_access": [{ "role": "READER", "specialGroup": "allAuthenticatedUsers" }]
+        },
+        "steps": [
+          "Revert dataset ACL using bigquery.datasets.patch API"
+        ],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "bq show --format=prettyjson analytics-prod:customer_churn | grep -i allAuthenticatedUsers"
+    }
+  },
+  {
+    "rank": 5,
+    "scenario_key": "iam-sa-owner",
+    "finding_id": "SCC-IAM-5102",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "IAM_EXCESSIVE_PRIVILEGE",
+    "service": "Cloud IAM & Governance",
+    "resource_name": "etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
+    "resource_id": "serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
+    "resource_type": "iam.googleapis.com/ServiceAccount",
+    "project_id": "analytics-prod",
+    "environment": "production",
+    "region": "global",
+    "severity": "HIGH",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 1.4",
+    "policy_id": "POL-CIS-GCP-1.4",
+    "description": "Batch processing service account possesses primitive project-wide roles/owner role binding.",
+    "prompt": "Remediate finding #SCC-IAM-5102: Service account etl-batch-sa possesses excessive roles/owner permissions.",
+    "risk_assessment": {
+      "score": 89,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 5,
+        "direct_dependencies": ["dataproc-etl", "bigquery-batch-runner", "cloud-storage-transfer"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: IAM_EXCESSIVE_PRIVILEGE (criticality: 80)",
+        "Service account holds primitive Owner rights across production project",
+        "High blast radius: potential to delete or modify any project asset"
+      ],
+      "rationale": "Primitive roles violate least privilege. If the service account credentials are compromised, an attacker gains root-level administrative access to the entire production analytics project."
+    },
+    "current_state": {
+      "roles": ["roles/owner"]
+    },
+    "proposed_state": {
+      "roles": ["roles/bigquery.jobUser", "roles/storage.objectViewer", "roles/bigquery.dataEditor"]
+    },
+    "technical_diff": {
+      "deletions": "- roles: [\"roles/owner\"]",
+      "additions": "+ roles: [\"roles/bigquery.jobUser\", \"roles/storage.objectViewer\", \"roles/bigquery.dataEditor\"]",
+      "summary": "Removes primitive roles/owner; assigns fine-grained, least-privilege roles determined via IAM recommender."
+    },
+    "remediation": {
+      "action_title": "Downgrade Primitive roles/owner to Scoped Least-Privilege IAM Roles",
+      "rationale": "Aligns with CIS GCP Benchmark 1.4 by removing dangerous administrative capabilities while preserving ETL execution permissions.",
+      "tool_name": "gcp_iam_enforce_least_privilege",
+      "tool_parameters": {
+        "service_account": "etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
+        "removed_roles": ["roles/owner"],
+        "added_roles": ["roles/bigquery.jobUser", "roles/storage.objectViewer", "roles/bigquery.dataEditor"]
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["IAM-Administrator", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "service_account": "etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
+          "roles": ["roles/owner"]
+        },
+        "steps": [
+          "Re-grant roles/owner binding via gcloud projects add-iam-policy-binding if jobs fail"
+        ],
+        "estimated_recovery_time_seconds": 15
+      },
+      "validation_probe": "gcloud projects get-iam-policy analytics-prod --flatten='bindings[].members' --filter='bindings.members:etl-batch-sa' --format='table(bindings.role)'"
+    }
+  },
+  {
+    "rank": 6,
+    "scenario_key": "run-unauth-invoker",
+    "finding_id": "SCC-RUN-44102",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "CLOUDRUN_UNAUTHENTICATED",
+    "service": "Cloud Run & Serverless",
+    "resource_name": "payment-processor-service",
+    "resource_id": "projects/payments-prod/locations/us-central1/services/payment-processor-service",
+    "resource_type": "run.googleapis.com/Service",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "HIGH",
+    "compliance_standard": "GCP Cloud Run Security Baseline",
+    "policy_id": "POL-SERVERLESS-0.1",
+    "description": "Internal payment processor microservice permits unauthenticated invocation by allUsers.",
+    "prompt": "Restrict unauthenticated invocations on internal Cloud Run service payment-processor-service.",
+    "risk_assessment": {
+      "score": 86,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 4,
+        "direct_dependencies": ["checkout-frontend", "api-gateway-prod", "stripe-connector"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: CLOUDRUN_UNAUTHENTICATED (criticality: 70)",
+        "Payment microservice callable by anonymous web requests",
+        "Bypasses API Gateway rate limiting and authentication checks"
+      ],
+      "rationale": "An unauthenticated Cloud Run endpoint processing credit card payments presents an imminent fraud and abuse risk. Must enforce OIDC identity verification."
+    },
+    "current_state": {
+      "invoker_binding": { "member": "allUsers", "role": "roles/run.invoker" }
+    },
+    "proposed_state": {
+      "invoker_binding": { "member": "serviceAccount:api-gateway-sa@payments-prod.iam.gserviceaccount.com", "role": "roles/run.invoker" }
+    },
+    "technical_diff": {
+      "deletions": "- member: \"allUsers\", role: \"roles/run.invoker\"",
+      "additions": "+ member: \"serviceAccount:api-gateway-sa@payments-prod.iam.gserviceaccount.com\", role: \"roles/run.invoker\"",
+      "summary": "Revokes anonymous public invoker; restricts to verified API Gateway service account."
+    },
+    "remediation": {
+      "action_title": "Revoke allUsers Invoker IAM Role & Enforce Authenticated Invocations",
+      "rationale": "Restricts invocation rights to authenticated upstream API gateway, preventing direct anonymous HTTP execution.",
+      "tool_name": "gcp_cloudrun_enforce_authentication",
+      "tool_parameters": {
+        "service_name": "payment-processor-service"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Platform-Owner", "Application-Security-Lead"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "service": "payment-processor-service",
+          "member": "allUsers"
+        },
+        "steps": [
+          "Re-add allUsers to roles/run.invoker binding if upstream token signing fails"
+        ],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud run services get-iam-policy payment-processor-service --region=us-central1 --format='value(bindings.members)'"
+    }
+  },
+  {
+    "rank": 7,
+    "scenario_key": "gcs-cmek",
+    "finding_id": "SCC-GCS-91823",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "STORAGE_MISSING_CMEK",
+    "service": "Cloud Storage (GCS)",
+    "resource_name": "financial-audit-logs-prod",
+    "resource_id": "projects/payments-prod/buckets/financial-audit-logs-prod",
+    "resource_type": "storage.googleapis.com/Bucket",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "HIGH",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 5.3",
+    "policy_id": "POL-CIS-GCP-5.3",
+    "description": "Cloud Storage bucket financial-audit-logs-prod is missing Customer-Managed Encryption Key (CMEK).",
+    "prompt": "Remediate finding #SCC-GCS-91823: Cloud Storage bucket financial-audit-logs-prod is missing CMEK encryption key.",
+    "risk_assessment": {
+      "score": 84,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 2,
+        "direct_dependencies": ["audit-logging-agent", "sox-compliance-collector"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: STORAGE_MISSING_CMEK (criticality: 65)",
+        "Financial regulatory audit trail must satisfy SOX & PCI key management controls",
+        "Bucket currently protected only by Google-managed keys"
+      ],
+      "rationale": "Financial audit logs stored with default Google-managed keys do not provide cryptographic sovereignty or granular key destruction capabilities."
+    },
+    "current_state": {
+      "encryption": "Google-Managed Default Key",
+      "default_kms_key_name": null
+    },
+    "proposed_state": {
+      "encryption": "Customer-Managed Key (CMEK)",
+      "default_kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/audit-key"
+    },
+    "technical_diff": {
+      "deletions": "- encryption: Google-Managed Default Key\n- default_kms_key_name: null",
+      "additions": "+ encryption: Customer-Managed Key (CMEK)\n+ default_kms_key_name: \"projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/audit-key\"",
+      "summary": "Enforces Cloud KMS Customer-Managed Encryption Key as default for new object uploads."
+    },
+    "remediation": {
+      "action_title": "Enforce Customer-Managed Encryption Key (CMEK) via Cloud KMS",
+      "rationale": "CIS GCP Benchmark 5.3 mandates customer-managed keys for regulatory audit buckets, granting the enterprise full cryptographic lifecycle control.",
+      "tool_name": "gcp_storage_enforce_cmek",
+      "tool_parameters": {
+        "bucket_name": "financial-audit-logs-prod",
+        "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/audit-key"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Cloud-Security-Lead", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "bucket": "financial-audit-logs-prod",
+          "default_kms_key": null
+        },
+        "steps": [
+          "Clear default_kms_key_name on bucket metadata via storage.buckets.patch"
+        ],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud storage buckets describe gs://financial-audit-logs-prod --format='value(encryption.defaultKmsKeyName)'"
+    }
+  },
+  {
+    "rank": 8,
+    "scenario_key": "gke-multi-issue",
+    "finding_id": "SCC-GKE-MULTI-9201",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "GKE_PUBLIC_ENDPOINT",
+    "service": "Google Kubernetes Engine (GKE)",
+    "resource_name": "payments-gke-prod",
+    "resource_id": "projects/payments-prod/zones/us-central1-a/clusters/payments-gke-prod",
+    "resource_type": "container.googleapis.com/Cluster",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "CRITICAL",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 4.1 & 4.6",
+    "policy_id": "POL-CIS-GCP-4.1",
+    "description": "GKE production cluster has public master endpoint and disabled intra-cluster network policy enforcement.",
+    "prompt": "Remediate finding group on GKE cluster payments-gke-prod (2 active high/critical violations).",
+    "risk_assessment": {
+      "score": 82,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 18,
+        "direct_dependencies": ["all-production-microservices"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Overlapping multi-issue finding on single high-criticality cluster asset",
+        "Master endpoint exposed plus flat, unsegmented pod network topology"
+      ],
+      "rationale": "Combined attack surface: external attackers can probe control plane, and internal pod breaches can move laterally without Calico network policies."
+    },
+    "current_state": {
+      "master_authorized_networks": ["0.0.0.0/0"],
+      "network_policy": { "enabled": false }
+    },
+    "proposed_state": {
+      "master_authorized_networks": ["10.128.0.0/24"],
+      "network_policy": { "enabled": true, "provider": "CALICO" }
+    },
+    "technical_diff": {
+      "deletions": "- master_authorized_networks: [\"0.0.0.0/0\"]\n- network_policy: { enabled: false }",
+      "additions": "+ master_authorized_networks: [\"10.128.0.0/24\"]\n+ network_policy: { enabled: true, provider: \"CALICO\" }",
+      "summary": "Restricts master API server to bastion CIDR and enables Calico network policy enforcement."
+    },
+    "remediation": {
+      "action_title": "Atomic Multi-Finding Remediation: Restrict Master CIDR & Enforce Network Policy",
+      "rationale": "Single atomic plan remediates both CIS 4.1 and CIS 4.6 under a single verified change window.",
+      "tool_name": "gcp_gke_disable_public_endpoint",
+      "tool_parameters": {
+        "cluster_name": "payments-gke-prod",
+        "authorized_cidrs": ["10.128.0.0/24"],
+        "enable_network_policy": true
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["SRE-Principal", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "cluster": "payments-gke-prod"
+        },
+        "steps": [
+          "Revert cluster configuration snapshot via container API"
+        ],
+        "estimated_recovery_time_seconds": 45
+      },
+      "validation_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(networkPolicy.enabled)'"
+    }
+  },
+  {
+    "rank": 9,
+    "scenario_key": "kms-rotation",
+    "finding_id": "SCC-KMS-77120",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "KMS_KEY_ROTATION_DISABLED",
+    "service": "Cloud KMS & Security",
+    "resource_name": "payment-kek",
+    "resource_id": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/payment-kek",
+    "resource_type": "cloudkms.googleapis.com/CryptoKey",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "HIGH",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 1.10",
+    "policy_id": "POL-KMS-0.1",
+    "description": "Cloud KMS symmetric encryption key payment-kek has automatic rotation disabled in production.",
+    "prompt": "Enable 90-day automatic cryptographic key rotation on Cloud KMS key payment-kek.",
+    "risk_assessment": {
+      "score": 80,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 5,
+        "direct_dependencies": ["customer-db-pg-prod", "financial-audit-logs-prod", "stripe-token-vault"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: KMS_KEY_ROTATION_DISABLED (criticality: 60)",
+        "Key encrypts primary production payment credentials and database records"
+      ],
+      "rationale": "Keys used indefinitely accumulate massive volumes of ciphertext under a single key version, magnifying exposure in case of cryptanalytic compromise."
+    },
+    "current_state": {
+      "rotation_period": null,
+      "next_rotation_time": null
+    },
+    "proposed_state": {
+      "rotation_period": "7776000s",
+      "next_rotation_time": "2026-12-01T00:00:00Z"
+    },
+    "technical_diff": {
+      "deletions": "- rotation_period: null",
+      "additions": "+ rotation_period: \"7776000s\" # 90 days automatic rotation",
+      "summary": "Enforces 90-day automatic cryptographic key rotation period."
+    },
+    "remediation": {
+      "action_title": "Configure 90-Day Automatic Key Rotation on Cloud KMS CryptoKey",
+      "rationale": "CIS GCP Benchmark 1.10 mandates scheduled key rotation to protect downstream encrypted databases and buckets.",
+      "tool_name": "gcp_kms_set_rotation_schedule",
+      "tool_parameters": {
+        "key_name": "payment-kek",
+        "keyring": "kms-prod",
+        "rotation_days": 90
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Security-Lead", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "key": "payment-kek",
+          "rotation_period": null
+        },
+        "steps": [
+          "Clear rotation schedule via kms.cryptoKeys.patch API"
+        ],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud kms keys describe payment-kek --keyring=kms-prod --location=us-central1 --format='value(rotationPeriod)'"
+    }
+  },
+  {
+    "rank": 10,
+    "scenario_key": "sql-multi-issue",
+    "finding_id": "SCC-SQL-MULTI-4401",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "DATABASE_PUBLIC_IP",
+    "service": "Cloud SQL (MySQL)",
+    "resource_name": "orders-mysql-prod",
+    "resource_id": "projects/orders-prod/instances/orders-mysql-prod",
+    "resource_type": "sqladmin.googleapis.com/Instance",
+    "project_id": "orders-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "HIGH",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 6.4 & 6.7",
+    "policy_id": "POL-CIS-GCP-6.7",
+    "description": "Production MySQL instance permits unencrypted SSL connections and has automated backups disabled.",
+    "prompt": "Remediate finding group on Cloud SQL instance orders-mysql-prod (SSL and Backup disabled).",
+    "risk_assessment": {
+      "score": 78,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 4,
+        "direct_dependencies": ["order-fulfillment", "inventory-sync", "shipping-gateway"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 1,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Overlapping multi-finding: unencrypted traffic in-transit & lack of DR backups"
+      ],
+      "rationale": "Allows man-in-the-middle sniffing of order data in-transit, and risks irrecoverable data loss without daily snapshots."
+    },
+    "current_state": {
+      "ssl_mode": "ALLOW_UNENCRYPTED_AND_ENCRYPTED",
+      "backup_configuration": { "enabled": false }
+    },
+    "proposed_state": {
+      "ssl_mode": "ENCRYPTED_ONLY",
+      "backup_configuration": { "enabled": true, "start_time": "02:00" }
+    },
+    "technical_diff": {
+      "deletions": "- ssl_mode: ALLOW_UNENCRYPTED_AND_ENCRYPTED\n- backup_configuration.enabled: false",
+      "additions": "+ ssl_mode: ENCRYPTED_ONLY\n+ backup_configuration: { enabled: true, start_time: \"02:00\" }",
+      "summary": "Mandates TLS encryption on DB port 3306 and enables nightly automated snapshots."
+    },
+    "remediation": {
+      "action_title": "Enforce SSL-Only Connections & Enable Automated Daily Backups on Cloud SQL",
+      "rationale": "Satisfies CIS GCP 6.4 and 6.7 simultaneously, securing data in-transit and disaster recovery readiness.",
+      "tool_name": "gcp_sql_enable_automated_backups",
+      "tool_parameters": {
+        "instance_name": "orders-mysql-prod",
+        "enforce_ssl": true
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Database-Admin", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "instance_name": "orders-mysql-prod"
+        },
+        "steps": [
+          "Revert SSL mode via sql.instances.patch"
+        ],
+        "estimated_recovery_time_seconds": 30
+      },
+      "validation_probe": "gcloud sql instances describe orders-mysql-prod --format='value(settings.ipConfiguration.sslMode)'"
+    }
+  },
+  {
+    "rank": 11,
+    "scenario_key": "secrets-cmek",
+    "finding_id": "SCC-SEC-33109",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "SECRET_UNENCRYPTED",
+    "service": "Secret Manager",
+    "resource_name": "stripe-live-api-key",
+    "resource_id": "projects/payments-prod/secrets/stripe-live-api-key",
+    "resource_type": "secretmanager.googleapis.com/Secret",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "global",
+    "severity": "HIGH",
+    "compliance_standard": "Google Cloud Security Foundations",
+    "policy_id": "POL-SECRETS-0.1",
+    "description": "Production payment secret stripe-live-api-key lacks Customer-Managed Encryption Key (CMEK).",
+    "prompt": "Enforce Cloud KMS CMEK encryption on Secret Manager secret stripe-live-api-key.",
+    "risk_assessment": {
+      "score": 76,
+      "risk_level": "HIGH",
+      "blast_radius": {
+        "affected_services_count": 2,
+        "direct_dependencies": ["payment-processor-service"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: SECRET_UNENCRYPTED (criticality: 65)",
+        "Contains live payment gateway credentials"
+      ],
+      "rationale": "High-value production payment keys stored without customer-managed cryptographic keys fail compliance mandates for key isolation."
+    },
+    "current_state": {
+      "customer_managed_encryption": null
+    },
+    "proposed_state": {
+      "customer_managed_encryption": { "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/secrets-kek" }
+    },
+    "technical_diff": {
+      "deletions": "- customer_managed_encryption: null",
+      "additions": "+ customer_managed_encryption: { kms_key_name: \".../cryptoKeys/secrets-kek\" }",
+      "summary": "Attaches Cloud KMS CMEK key to secret replication config."
+    },
+    "remediation": {
+      "action_title": "Enforce CMEK Encryption on Secret Manager Secret",
+      "rationale": "Enforces sovereign customer encryption key on sensitive payment gateway credentials.",
+      "tool_name": "gcp_secret_manager_enforce_cmek",
+      "tool_parameters": {
+        "secret_id": "stripe-live-api-key",
+        "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/secrets-kek"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Security-Lead", "Platform-Owner"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "secret_id": "stripe-live-api-key" },
+        "steps": ["Revert secret encryption configuration"],
+        "estimated_recovery_time_seconds": 15
+      },
+      "validation_probe": "gcloud secrets describe stripe-live-api-key --format='value(customerManagedEncryption.kmsKeyName)'"
+    }
+  },
+  {
+    "rank": 12,
+    "scenario_key": "gke-workload-identity",
+    "finding_id": "SCC-GKE-41029",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "GKE_WORKLOAD_IDENTITY_DISABLED",
+    "service": "Google Kubernetes Engine (GKE)",
+    "resource_name": "order-processing-cluster",
+    "resource_id": "projects/orders-prod/clusters/order-processing-cluster",
+    "resource_type": "container.googleapis.com/Cluster",
+    "project_id": "orders-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "MEDIUM",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 4.2",
+    "policy_id": "POL-CIS-GCP-4.2",
+    "description": "GKE cluster workload identity is disabled; pods utilize static long-lived service account keys.",
+    "prompt": "Enforce Workload Identity on order-processing-cluster to eliminate static JSON credentials.",
+    "risk_assessment": {
+      "score": 68,
+      "risk_level": "MEDIUM",
+      "blast_radius": {
+        "affected_services_count": 6,
+        "direct_dependencies": ["order-worker", "inventory-tracker", "notification-dispatcher"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: GKE_WORKLOAD_IDENTITY_DISABLED (criticality: 45)",
+        "Pods mounting static credential files in filesystem secrets"
+      ],
+      "rationale": "Static keys mounted inside pods can be exfiltrated. Workload Identity provides automatic token rotation and removes persistent credentials."
+    },
+    "current_state": {
+      "workload_identity_config": null
+    },
+    "proposed_state": {
+      "workload_identity_config": { "workload_pool": "orders-prod.svc.id.goog" }
+    },
+    "technical_diff": {
+      "deletions": "- workload_identity_config: null",
+      "additions": "+ workload_identity_config: { workload_pool: \"orders-prod.svc.id.goog\" }",
+      "summary": "Configures Workload Identity pool on cluster."
+    },
+    "remediation": {
+      "action_title": "Enable GKE Workload Identity on Production Cluster",
+      "rationale": "CIS GCP Benchmark 4.2 recommends Workload Identity to replace long-lived static JSON service account keys.",
+      "tool_name": "gcp_gke_enable_workload_identity",
+      "tool_parameters": {
+        "cluster_name": "order-processing-cluster",
+        "workload_pool": "orders-prod.svc.id.goog"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Platform-Owner", "Kubernetes-Lead"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "cluster_name": "order-processing-cluster" },
+        "steps": ["Revert workload identity configuration via container API"],
+        "estimated_recovery_time_seconds": 45
+      },
+      "validation_probe": "gcloud container clusters describe order-processing-cluster --format='value(workloadIdentityConfig.workloadPool)'"
+    }
+  },
+  {
+    "rank": 13,
+    "scenario_key": "vm-external-ip",
+    "finding_id": "SCC-GCE-55102",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "VM_EXTERNAL_IP",
+    "service": "Compute Engine (VM)",
+    "resource_name": "db-worker-vm-01",
+    "resource_id": "projects/core-staging/zones/us-central1-a/instances/db-worker-vm-01",
+    "resource_type": "compute.googleapis.com/Instance",
+    "project_id": "core-staging",
+    "environment": "staging",
+    "region": "us-central1",
+    "severity": "MEDIUM",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 3.8",
+    "policy_id": "POL-CIS-GCP-3.8",
+    "description": "Internal database worker VM has public external IP address attached directly to interface.",
+    "prompt": "Remove unauthorized external public IP from database VM db-worker-vm-01 in staging.",
+    "risk_assessment": {
+      "score": 64,
+      "risk_level": "MEDIUM",
+      "blast_radius": {
+        "affected_services_count": 2,
+        "direct_dependencies": ["staging-db-worker"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: STAGING (weight: 50)",
+        "Violation Category: VM_EXTERNAL_IP (criticality: 55)",
+        "Direct public IP attached to internal worker VM"
+      ],
+      "rationale": "Internal database worker should not be directly routable from the public internet. Outbound traffic must route via Cloud NAT."
+    },
+    "current_state": {
+      "access_configs": [{ "type": "ONE_TO_ONE_NAT", "nat_ip": "35.202.14.89" }],
+      "internal_ip": "10.128.4.12"
+    },
+    "proposed_state": {
+      "access_configs": [],
+      "internal_ip": "10.128.4.12"
+    },
+    "technical_diff": {
+      "deletions": "- access_configs: [{\"nat_ip\": \"35.202.14.89\"}]",
+      "additions": "+ access_configs: [] # Outbound internet routed via Cloud NAT",
+      "summary": "Deletes external IP AccessConfig from VM network interface."
+    },
+    "remediation": {
+      "action_title": "Delete External Public IP AccessConfig from Compute Engine VM",
+      "rationale": "CIS GCP Benchmark 3.8 states internal database and worker VMs must have only internal IP addresses.",
+      "tool_name": "gcp_gce_remove_external_ip",
+      "tool_parameters": {
+        "instance_name": "db-worker-vm-01"
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": ["Platform-Engineer"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "instance_name": "db-worker-vm-01", "nat_ip": "35.202.14.89" },
+        "steps": ["Re-attach external IP if needed"],
+        "estimated_recovery_time_seconds": 15
+      },
+      "validation_probe": "gcloud compute instances describe db-worker-vm-01 --zone=us-central1-a --format='value(networkInterfaces[0].accessConfigs)'"
+    }
+  },
+  {
+    "rank": 14,
+    "scenario_key": "pubsub-cmek",
+    "finding_id": "SCC-PUBSUB-1920",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "PUBSUB_MISSING_CMEK",
+    "service": "Pub/Sub Messaging",
+    "resource_name": "payment-events-topic-prod",
+    "resource_id": "projects/payments-prod/topics/payment-events-topic-prod",
+    "resource_type": "pubsub.googleapis.com/Topic",
+    "project_id": "payments-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "MEDIUM",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 5.3 Extension",
+    "policy_id": "POL-PUBSUB-0.1",
+    "description": "Production payment events Pub/Sub topic is not encrypted with Customer-Managed Encryption Key (CMEK).",
+    "prompt": "Enforce Cloud KMS CMEK encryption on Pub/Sub topic payment-events-topic-prod.",
+    "risk_assessment": {
+      "score": 58,
+      "risk_level": "MEDIUM",
+      "blast_radius": {
+        "affected_services_count": 3,
+        "direct_dependencies": ["payment-subscriber-service", "analytics-ingestion"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: PRODUCTION (weight: 85)",
+        "Violation Category: PUBSUB_MISSING_CMEK (criticality: 45)",
+        "Buffers payment transaction event messages"
+      ],
+      "rationale": "High-volume transactional event streams must be protected under customer cryptographic key control."
+    },
+    "current_state": {
+      "kms_key_name": null
+    },
+    "proposed_state": {
+      "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/pubsub-kek"
+    },
+    "technical_diff": {
+      "deletions": "- kms_key_name: null",
+      "additions": "+ kms_key_name: \"projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/pubsub-kek\"",
+      "summary": "Configures Cloud KMS key for encrypting messages at rest."
+    },
+    "remediation": {
+      "action_title": "Enforce Customer-Managed Encryption Key (CMEK) on Pub/Sub Topic",
+      "rationale": "Secures buffered queue messages with enterprise cryptographic key.",
+      "tool_name": "gcp_pubsub_enforce_cmek",
+      "tool_parameters": {
+        "topic_name": "payment-events-topic-prod",
+        "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/pubsub-kek"
+      },
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": ["Platform-Owner", "Security-Lead"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "topic_name": "payment-events-topic-prod" },
+        "steps": ["Revert topic encryption settings"],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud pubsub topics describe payment-events-topic-prod --format='value(kmsKeyName)'"
+    }
+  },
+  {
+    "rank": 15,
+    "scenario_key": "gcs-public",
+    "finding_id": "SCC-GCS-84920",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "STORAGE_PUBLIC_ACCESS",
+    "service": "Cloud Storage (GCS)",
+    "resource_name": "retail-app-invoices-dev",
+    "resource_id": "projects/retail-dev-env/buckets/retail-app-invoices-dev",
+    "resource_type": "storage.googleapis.com/Bucket",
+    "project_id": "retail-dev-env",
+    "environment": "development",
+    "region": "us-central1",
+    "severity": "HIGH",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 5.1",
+    "policy_id": "POL-CIS-GCP-5.1",
+    "description": "Cloud Storage bucket permissions allow public read access (allUsers in IAM binding).",
+    "prompt": "Remediate finding #SCC-GCS-84920: Cloud Storage bucket retail-app-invoices-dev allows public access.",
+    "risk_assessment": {
+      "score": 48,
+      "risk_level": "MEDIUM",
+      "blast_radius": {
+        "affected_services_count": 1,
+        "direct_dependencies": ["dev-invoice-microservice"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: DEVELOPMENT (weight: 25)",
+        "Violation Category: STORAGE_PUBLIC_ACCESS (criticality: 35)",
+        "Public anonymous read access enabled via allUsers",
+        "Non-production tier enables safe autonomous self-healing"
+      ],
+      "rationale": "Although located in development, public access violates organizational security policy POL-CIS-GCP-5.1. Autonomous remediation is permitted."
+    },
+    "current_state": {
+      "iam_bindings": [
+        { "role": "roles/storage.objectViewer", "members": ["allUsers"] },
+        { "role": "roles/storage.admin", "members": ["serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"] }
+      ],
+      "public_access_prevention": "unspecified"
+    },
+    "proposed_state": {
+      "iam_bindings": [
+        { "role": "roles/storage.admin", "members": ["serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"] }
+      ],
+      "public_access_prevention": "enforced"
+    },
+    "technical_diff": {
+      "deletions": "- member: \"allUsers\", role: \"roles/storage.objectViewer\"\n- public_access_prevention: \"unspecified\"",
+      "additions": "+ public_access_prevention: \"enforced\"",
+      "summary": "Removes allUsers IAM binding and activates Public Access Prevention (PAP)."
+    },
+    "remediation": {
+      "action_title": "Remove allUsers IAM Grant & Enforce Public Access Prevention (PAP)",
+      "rationale": "CIS GCP Benchmark 5.1 mandates blocking allUsers. Enforcing PAP prevents subsequent accidental public exposures.",
+      "tool_name": "gcp_storage_remove_public_access",
+      "tool_parameters": {
+        "bucket_name": "retail-app-invoices-dev",
+        "current_iam_bindings": [
+          { "role": "roles/storage.objectViewer", "members": ["allUsers"] }
+        ]
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": ["DevOps-Engineer"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {
+          "bucket": "retail-app-invoices-dev",
+          "bindings": [{ "role": "roles/storage.objectViewer", "members": ["allUsers"] }]
+        },
+        "steps": [
+          "Re-add public binding if external dev webhook fails"
+        ],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(iamConfiguration.publicAccessPrevention)'"
+    }
+  },
+  {
+    "rank": 16,
+    "scenario_key": "gcs-multi-issue",
+    "finding_id": "SCC-GCS-MULTI-84920",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "STORAGE_PUBLIC_ACCESS",
+    "service": "Cloud Storage (GCS)",
+    "resource_name": "retail-app-invoices-dev",
+    "resource_id": "projects/retail-dev-env/buckets/retail-app-invoices-dev",
+    "resource_type": "storage.googleapis.com/Bucket",
+    "project_id": "retail-dev-env",
+    "environment": "development",
+    "region": "us-central1",
+    "severity": "MEDIUM",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 5.1 & 5.4",
+    "policy_id": "POL-CIS-GCP-5.1",
+    "description": "Development bucket retail-app-invoices-dev has public read access and missing lifecycle retention management.",
+    "prompt": "Inspect and remediate finding group on bucket retail-app-invoices-dev (2 active violations).",
+    "risk_assessment": {
+      "score": 38,
+      "risk_level": "LOW",
+      "blast_radius": {
+        "affected_services_count": 1,
+        "direct_dependencies": ["dev-invoices"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: DEVELOPMENT (weight: 25)",
+        "Atomic multi-finding resolution in development sandbox",
+        "Self-healing pre-authorized by Policy Engine"
+      ],
+      "rationale": "Resolving public access and lifecycle transition atomically in dev sandbox. 100% automated self-healing without human blocker."
+    },
+    "current_state": {
+      "public_access_prevention": "unspecified",
+      "lifecycle_rules": []
+    },
+    "proposed_state": {
+      "public_access_prevention": "enforced",
+      "lifecycle_rules": [{ "action": "SetStorageClass: COLDLINE", "condition": { "age": 365 } }]
+    },
+    "technical_diff": {
+      "deletions": "- iam_binding: roles/storage.objectViewer -> [\"allUsers\"]\n- lifecycle_rules: []",
+      "additions": "+ public_access_prevention: \"enforced\"\n+ lifecycle_rules: [ { action: \"SetStorageClass: COLDLINE\", condition: { age: 365 } } ]",
+      "summary": "Enforces PAP and adds 365-day Coldline lifecycle rule atomically."
+    },
+    "remediation": {
+      "action_title": "Atomic Multi-Fix: Enforce PAP & Configure 365-Day Coldline Lifecycle Rule",
+      "rationale": "Cuts storage costs and closes public reading risk simultaneously.",
+      "tool_name": "gcp_storage_remove_public_access",
+      "tool_parameters": {
+        "bucket_name": "retail-app-invoices-dev",
+        "add_lifecycle": true
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": ["DevOps-Engineer"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "bucket": "retail-app-invoices-dev" },
+        "steps": ["Restore original bucket configuration"],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(lifecycle.rule[0].action.type)'"
+    }
+  },
+  {
+    "rank": 17,
+    "scenario_key": "sql-backup-disabled",
+    "finding_id": "SCC-SQL-21094",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "DATABASE_BACKUP_DISABLED",
+    "service": "Cloud SQL (MySQL)",
+    "resource_name": "analytics-mysql-dev",
+    "resource_id": "projects/analytics-dev/instances/analytics-mysql-dev",
+    "resource_type": "sqladmin.googleapis.com/Instance",
+    "project_id": "analytics-dev",
+    "environment": "development",
+    "region": "us-central1",
+    "severity": "LOW",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 6.7",
+    "policy_id": "POL-CIS-GCP-6.7",
+    "description": "Automated daily backups and point-in-time recovery disabled on database instance.",
+    "prompt": "Remediate finding #SCC-SQL-21094: Automated backups disabled on analytics-mysql-dev.",
+    "risk_assessment": {
+      "score": 28,
+      "risk_level": "LOW",
+      "blast_radius": {
+        "affected_services_count": 1,
+        "direct_dependencies": ["analytics-sandbox"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: DEVELOPMENT (weight: 25)",
+        "Violation Category: DATABASE_BACKUP_DISABLED (criticality: 30)",
+        "Zero downtime risk to enable background backup schedule"
+      ],
+      "rationale": "Automated backups in dev environment ensure developer data loss prevention without requiring engineering overhead."
+    },
+    "current_state": {
+      "backup_configuration": { "enabled": false }
+    },
+    "proposed_state": {
+      "backup_configuration": { "enabled": true, "start_time": "03:00" }
+    },
+    "technical_diff": {
+      "deletions": "- backup_configuration.enabled: false",
+      "additions": "+ backup_configuration.enabled: true\n+ backup_configuration.start_time: \"03:00\"",
+      "summary": "Enables automated daily backup schedule at 03:00 UTC."
+    },
+    "remediation": {
+      "action_title": "Enable Automated Daily Backups and Point-In-Time Recovery on Cloud SQL",
+      "rationale": "Ensures developmental database states are recoverable following testing experiments.",
+      "tool_name": "gcp_sql_enable_automated_backups",
+      "tool_parameters": {
+        "instance_name": "analytics-mysql-dev"
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": ["DevOps-Engineer"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "instance_name": "analytics-mysql-dev", "backups": false },
+        "steps": ["Disable automated backups if storage quota exceeded"],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud sql instances describe analytics-mysql-dev --format='value(settings.backupConfiguration.enabled)'"
+    }
+  },
+  {
+    "rank": 18,
+    "scenario_key": "iam-key-unrotated",
+    "finding_id": "SCC-IAM-11094",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "IAM_KEY_UNROTATED",
+    "service": "Cloud IAM & Governance",
+    "resource_name": "ci-deployer-sa-key-9281",
+    "resource_id": "serviceAccount:ci-deployer@dev-core.iam/keys/ci-deployer-sa-key-9281",
+    "resource_type": "iam.googleapis.com/ServiceAccountKey",
+    "project_id": "dev-core",
+    "environment": "development",
+    "region": "global",
+    "severity": "LOW",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 1.3",
+    "policy_id": "POL-CIS-GCP-1.3",
+    "description": "User-managed service account key has been active for 142 days without cryptographic rotation.",
+    "prompt": "Rotate expired user-managed service account key ci-deployer-sa-key-9281 older than 90 days.",
+    "risk_assessment": {
+      "score": 22,
+      "risk_level": "LOW",
+      "blast_radius": {
+        "affected_services_count": 1,
+        "direct_dependencies": ["ci-pipeline-runner"],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: DEVELOPMENT (weight: 25)",
+        "Violation Category: IAM_KEY_UNROTATED (criticality: 20)",
+        "Stale credential can be rotated smoothly via Secret Manager sync"
+      ],
+      "rationale": "Key age of 142 days exceeds the 90-day threshold. Autonomous key rotation creates replacement and deprecates stale key."
+    },
+    "current_state": {
+      "key_age_days": 142,
+      "status": "EXPIRED"
+    },
+    "proposed_state": {
+      "key_age_days": 0,
+      "status": "ROTATED_AND_ACTIVE"
+    },
+    "technical_diff": {
+      "deletions": "- key_id: ci-deployer-sa-key-9281 (status: EXPIRED)",
+      "additions": "+ key_id: ci-deployer-sa-key-new (status: ACTIVE, age: 0d)",
+      "summary": "Generates new service account key and disables expired key."
+    },
+    "remediation": {
+      "action_title": "Rotate Expired Service Account Key and Sync Secret Manager",
+      "rationale": "CIS GCP Benchmark 1.3 mandates rotating credentials older than 90 days to limit the impact of leaked keys.",
+      "tool_name": "gcp_iam_rotate_sa_key",
+      "tool_parameters": {
+        "service_account": "ci-deployer@dev-core.iam.gserviceaccount.com",
+        "old_key_id": "ci-deployer-sa-key-9281"
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": ["DevOps-Engineer"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "old_key_id": "ci-deployer-sa-key-9281" },
+        "steps": ["Re-enable previous key if CI/CD runner fails"],
+        "estimated_recovery_time_seconds": 10
+      },
+      "validation_probe": "gcloud iam service-accounts keys list --iam-account=ci-deployer@dev-core.iam.gserviceaccount.com"
+    }
+  },
+  {
+    "rank": 19,
+    "scenario_key": "func-runtime-dev",
+    "finding_id": "SCC-FUNC-11029",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "UNENCRYPTED_RESOURCE",
+    "service": "Cloud Functions",
+    "resource_name": "nightly-cleanup-function-dev",
+    "resource_id": "projects/retail-dev-env/locations/us-central1/functions/nightly-cleanup-function-dev",
+    "resource_type": "cloudfunctions.googleapis.com/CloudFunction",
+    "project_id": "retail-dev-env",
+    "environment": "development",
+    "region": "us-central1",
+    "severity": "LOW",
+    "compliance_standard": "Google Cloud Security Baseline",
+    "policy_id": "POL-SERVERLESS-0.1",
+    "description": "Cloud Function has public ingress setting enabled and utilizes deprecated runtime python38.",
+    "prompt": "Update ingress settings to internal-only and upgrade runtime on nightly-cleanup-function-dev.",
+    "risk_assessment": {
+      "score": 18,
+      "risk_level": "LOW",
+      "blast_radius": {
+        "affected_services_count": 1,
+        "direct_dependencies": ["cron-scheduler"],
+        "has_internet_facing_impact": true,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "Target Environment: DEVELOPMENT (weight: 25)",
+        "Violation Category: Serverless Configuration Hygiene",
+        "Non-critical nightly cleanup utility"
+      ],
+      "rationale": "Internal utility function should not have public ingress. Upgrading to python312 and internal ingress eliminates CVE risks."
+    },
+    "current_state": {
+      "ingress_settings": "ALLOW_ALL",
+      "runtime": "python38"
+    },
+    "proposed_state": {
+      "ingress_settings": "ALLOW_INTERNAL_ONLY",
+      "runtime": "python312"
+    },
+    "technical_diff": {
+      "deletions": "- ingress_settings: ALLOW_ALL\n- runtime: python38",
+      "additions": "+ ingress_settings: ALLOW_INTERNAL_ONLY\n+ runtime: python312",
+      "summary": "Restricts ingress to internal VPC and updates runtime."
+    },
+    "remediation": {
+      "action_title": "Restrict Ingress to Internal Only & Upgrade Runtime on Cloud Function",
+      "rationale": "Hardens serverless function against direct public invocation and resolves end-of-life runtime vulnerability.",
+      "tool_name": "gcp_functions_update_configuration",
+      "tool_parameters": {
+        "function_name": "nightly-cleanup-function-dev",
+        "ingress_settings": "ALLOW_INTERNAL_ONLY"
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": ["DevOps-Engineer"],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": { "function_name": "nightly-cleanup-function-dev" },
+        "steps": ["Revert ingress settings via functions API"],
+        "estimated_recovery_time_seconds": 15
+      },
+      "validation_probe": "gcloud functions describe nightly-cleanup-function-dev --region=us-central1 --format='value(ingressSettings)'"
+    }
+  },
+  {
+    "rank": 20,
+    "scenario_key": "gcs-zero-violation",
+    "finding_id": "SCC-AUDIT-CLEAN-001",
+    "source": "Google Cloud Security Command Center (SCC)",
+    "category": "CLEAN_COMPLIANT_RESOURCE",
+    "service": "Cloud Storage (GCS)",
+    "resource_name": "secure-backup-vault-prod",
+    "resource_id": "projects/security-prod/buckets/secure-backup-vault-prod",
+    "resource_type": "storage.googleapis.com/Bucket",
+    "project_id": "security-prod",
+    "environment": "production",
+    "region": "us-central1",
+    "severity": "LOW",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 100% Compliant",
+    "policy_id": "POL-CIS-GCP-5.1",
+    "description": "Resource matches 100% of defined organizational security baselines. Zero active violations detected.",
+    "prompt": "Verify compliance posture on secure-backup-vault-prod.",
+    "risk_assessment": {
+      "score": 0,
+      "risk_level": "SECURE",
+      "blast_radius": {
+        "affected_services_count": 0,
+        "direct_dependencies": [],
+        "has_internet_facing_impact": false,
+        "potential_downtime_minutes": 0,
+        "data_loss_risk": false
+      },
+      "reversibility": "FULL",
+      "factors": [
+        "100% of compliance benchmarks passing",
+        "Public Access Prevention enforced",
+        "Customer-Managed KMS Encryption Key active",
+        "Locked 7-year immutable object retention vault"
+      ],
+      "rationale": "Exemplary hardened resource architecture demonstrating zero drift and flawless compliance posture."
+    },
+    "current_state": {
+      "public_access_prevention": "enforced",
+      "encryption": "Customer-Managed Key (CMEK)",
+      "uniform_bucket_level_access": true,
+      "retention_policy_locked": true
+    },
+    "proposed_state": {
+      "status": "MAINTAIN_CURRENT_HARDENED_STATE"
+    },
+    "technical_diff": {
+      "deletions": "// No non-compliant configurations detected",
+      "additions": "// Resource matches 100% of defined organizational security baselines",
+      "summary": "Compliance Score: 100% | Zero Violations Present | Status: Fully Hardened."
+    },
+    "remediation": {
+      "action_title": "No Remediation Required — Resource in Certified Golden State",
+      "rationale": "Resource passes all automated controls. Continuous monitoring active.",
+      "tool_name": "gcp_storage_audit_verify",
+      "tool_parameters": {
+        "bucket_name": "secure-backup-vault-prod"
+      },
+      "governance_decision": "AUTO_EXECUTE",
+      "approver_roles": [],
+      "rollback_procedure": {
+        "strategy_type": "AUTOMATIC_RESTORE",
+        "snapshot_state": {},
+        "steps": ["No rollback action applicable"],
+        "estimated_recovery_time_seconds": 0
+      },
+      "validation_probe": "gsutil uniformbucketlevelaccess get gs://secure-backup-vault-prod"
+    }
+  }
+]
