@@ -119,13 +119,59 @@ class ComprehensiveRemediationPlanner(RemediationPlanner):
                 ),
             ]
             rollback = RollbackProcedure(
-                strategy_type="AUTOMATIC_RESTORE",
+                strategy_type="SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
                 snapshot_state={"instance_name": finding.resource.resource_name},
-                steps=["Revert backup configuration."],
+                steps=["If health checks fail, safely stop and restore verified compliant snapshot."],
                 estimated_recovery_time_seconds=10,
             )
             tool_name = "gcp_sql_enable_automated_backups"
             tool_params = {"instance_name": finding.resource.resource_name}
+
+        elif "DATABASE_SSL_ENFORCEMENT" in cat_val or "missing_ssl" in cat_val.lower():
+            action_title = "Require TLS for Cloud SQL Connections"
+            rationale = "CIS GCP Benchmark 6.4 mandates SSL/TLS encryption for all database connections to prevent plaintext data in transit."
+            diffs = [
+                TechnicalDiff(
+                    parameter="ssl_mode",
+                    current_value="ALLOW_UNENCRYPTED_AND_ENCRYPTED",
+                    proposed_value="ENCRYPTED_ONLY",
+                    description="Require encrypted connections only after client validation.",
+                ),
+            ]
+            rollback = RollbackProcedure(
+                strategy_type="SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+                snapshot_state={"instance_name": finding.resource.resource_name},
+                steps=["If client compatibility checks fail, safely stop and restore verified compliant snapshot."],
+                estimated_recovery_time_seconds=15,
+            )
+            tool_name = "gcp_sql_enforce_ssl_only"
+            tool_params = {"instance_name": finding.resource.resource_name, "ssl_mode": "ENCRYPTED_ONLY"}
+
+        elif "FUNCTION_PUBLIC_INGRESS" in cat_val or "function" in finding.resource.resource_type.lower():
+            action_title = "Restrict Cloud Function Ingress and Upgrade Runtime"
+            rationale = "Google Cloud Security Baseline mandates restricting Cloud Function ingress to internal traffic and deprecating outdated runtimes."
+            diffs = [
+                TechnicalDiff(
+                    parameter="ingress_settings",
+                    current_value="ALLOW_ALL",
+                    proposed_value="ALLOW_INTERNAL_ONLY",
+                    description="Restrict ingress traffic to internal resources only.",
+                ),
+                TechnicalDiff(
+                    parameter="runtime",
+                    current_value="python38",
+                    proposed_value="python312",
+                    description="Upgrade runtime from deprecated Python 3.8 to Python 3.12.",
+                ),
+            ]
+            rollback = RollbackProcedure(
+                strategy_type="SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+                snapshot_state={"function_name": finding.resource.resource_name},
+                steps=["If deployment validation fails, revert to previous internal snapshot."],
+                estimated_recovery_time_seconds=20,
+            )
+            tool_name = "gcp_cloudfunction_harden"
+            tool_params = {"function_name": finding.resource.resource_name, "ingress_settings": "ALLOW_INTERNAL_ONLY", "runtime": "python312"}
 
         elif "VM_EXTERNAL_IP" in cat_val or "gce" in finding.resource.resource_type.lower():
             action_title = "Delete External Public IP AccessConfig from Database VM"

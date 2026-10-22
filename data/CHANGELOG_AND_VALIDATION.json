@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-10-12T00:00:00Z",
+  "source_files": [
+    "findings.json",
+    "policies.json",
+    "remediations.json",
+    "resources.json"
+  ],
+  "output_files": [
+    "findings.json",
+    "policies.json",
+    "remediations.json",
+    "resources.json"
+  ],
+  "record_counts": {
+    "findings": 20,
+    "policies": 18,
+    "remediations": 18,
+    "resources": 23
+  },
+  "changes": [
+    "Added policy version, evaluation logic version, effective date, outcomes, and runtime authorization metadata to policies.",
+    "Split the multi-issue Cloud SQL record into separate backup and TLS findings, with aligned policy categories.",
+    "Added explicit Cloud SQL TLS and Cloud Functions ingress policies to remove category/resource-type mismatches.",
+    "Removed the clean compliant evaluation from findings and retained it as a resource-level compliance evaluation record.",
+    "Added remediation templates for all finding categories, including CMEK, backups, Workload Identity, key rotation, public ACLs, external IPs, TLS, and Cloud Functions ingress.",
+    "Replaced rollback plans that could restore public access or other noncompliant states with safe-stop / compliant-snapshot guidance.",
+    "Changed the catalog AUTO_EXECUTE default to REQUIRE_HUMAN_APPROVAL and made execution disabled by default; runtime authorization remains mandatory.",
+    "Added finding timestamps, status, evidence, confidence, policy version, remediation status, and normalized resource UID.",
+    "Added resource inventory/version metadata and reconciled violation IDs against actual findings.",
+    "Marked analytics-warehouse-export-prod as UNKNOWN_REQUIRES_RESCAN because its prior violation reference had no corresponding finding; did not falsely assert compliance.",
+    "Normalized every finding-level remediation decision to REQUIRE_HUMAN_APPROVAL and explicitly disabled execution by default."
+  ],
+  "validation": {
+    "json_parse": "PASS",
+    "finding_policy_category_alignment": "PASS",
+    "finding_remediation_category_coverage": "PASS",
+    "finding_resource_references": "PASS",
+    "resource_violation_ids": "PASS",
+    "human_approval_required_for_all_finding_remediations": "PASS",
+    "execution_disabled_by_default": "PASS",
+    "issues": []
+  },
+  "safety_note": "These are normalized seed-data examples. CLI commands, Terraform snippets, and tool names remain unvalidated examples and must not be executed directly in production. Runtime must independently enforce authorization, environment restrictions, approval, preconditions, dry-run/plan review, idempotency, post-change policy evaluation, health checks, and audit logging."
+}

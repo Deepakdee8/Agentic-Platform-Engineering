@@ -4,37 +4,78 @@
     "policy_name": "Enforce Least Privilege on Service Accounts (Prohibit Primitive Roles)",
     "governing_standard": "CIS GCP Benchmark v2.0 - 1.4",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-2", "AC-3", "AC-6"],
-      "pci_dss_v4": ["Req 7.1", "Req 7.2"],
-      "soc_2": ["CC6.1", "CC6.3"],
-      "iso_27001": ["A.8.2"]
+      "nist_800_53": [
+        "AC-2",
+        "AC-3",
+        "AC-6"
+      ],
+      "pci_dss_v4": [
+        "Req 7.1",
+        "Req 7.2"
+      ],
+      "soc_2": [
+        "CC6.1",
+        "CC6.3"
+      ],
+      "iso_27001": [
+        "A.8.2"
+      ]
     },
     "category": "IAM_EXCESSIVE_PRIVILEGE",
-    "target_resource_types": ["iam.googleapis.com/ServiceAccount"],
+    "target_resource_types": [
+      "iam.googleapis.com/ServiceAccount"
+    ],
     "severity": "HIGH",
     "description": "Service accounts must not be granted primitive roles (roles/owner, roles/editor) across projects or organizations.",
     "evaluation_rule": {
       "target_field": "roles",
       "operator": "NOT_CONTAINS_ANY",
-      "prohibited_values": ["roles/owner", "roles/editor"]
+      "prohibited_values": [
+        "roles/owner",
+        "roles/editor"
+      ]
     },
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 4,
     "auto_remediation_supported": true,
-    "rationale": "Primitive roles grant blanket data access and administrative mutation rights, violating the principle of least privilege."
+    "rationale": "Primitive roles grant blanket data access and administrative mutation rights, violating the principle of least privilege.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-1.3",
     "policy_name": "Enforce 90-Day Cryptographic Rotation for User-Managed Service Account Keys",
     "governing_standard": "CIS GCP Benchmark v2.0 - 1.3",
     "regulatory_mappings": {
-      "nist_800_53": ["IA-5(1)", "AC-2(2)"],
-      "pci_dss_v4": ["Req 8.2.4", "Req 8.3.6"],
-      "soc_2": ["CC6.1"],
-      "iso_27001": ["A.8.5"]
+      "nist_800_53": [
+        "IA-5(1)",
+        "AC-2(2)"
+      ],
+      "pci_dss_v4": [
+        "Req 8.2.4",
+        "Req 8.3.6"
+      ],
+      "soc_2": [
+        "CC6.1"
+      ],
+      "iso_27001": [
+        "A.8.5"
+      ]
     },
     "category": "IAM_KEY_UNROTATED",
-    "target_resource_types": ["iam.googleapis.com/ServiceAccountKey"],
+    "target_resource_types": [
+      "iam.googleapis.com/ServiceAccountKey"
+    ],
     "severity": "LOW",
     "description": "User-managed service account keys must be cryptographically rotated every 90 days or migrated to Workload Identity.",
     "evaluation_rule": {
@@ -45,45 +86,96 @@
     "enforcement_mode": "AUTONOMOUS_HEAL_ELIGIBLE",
     "remediation_sla_hours": 72,
     "auto_remediation_supported": true,
-    "rationale": "Stale service account keys pose a major credential leakage risk if committed to version control or local machines."
+    "rationale": "Stale service account keys pose a major credential leakage risk if committed to version control or local machines.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": true,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-3.6",
     "policy_name": "Restrict Unrestricted Inbound SSH Access (Port 22) from Public Internet",
     "governing_standard": "CIS GCP Benchmark v2.0 - 3.6",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-7", "AC-17", "IA-2"],
-      "pci_dss_v4": ["Req 1.2.1", "Req 1.3.1"],
-      "soc_2": ["CC6.6", "CC6.7"],
-      "iso_27001": ["A.8.20"]
+      "nist_800_53": [
+        "SC-7",
+        "AC-17",
+        "IA-2"
+      ],
+      "pci_dss_v4": [
+        "Req 1.2.1",
+        "Req 1.3.1"
+      ],
+      "soc_2": [
+        "CC6.6",
+        "CC6.7"
+      ],
+      "iso_27001": [
+        "A.8.20"
+      ]
     },
     "category": "FIREWALL_OPEN_INGRESS",
-    "target_resource_types": ["compute.googleapis.com/Firewall"],
+    "target_resource_types": [
+      "compute.googleapis.com/Firewall"
+    ],
     "severity": "CRITICAL",
     "description": "VPC firewall rules must not permit ingress TCP port 22 from source range 0.0.0.0/0. Remote access must route through Google Identity-Aware Proxy (IAP) or approved corporate bastion CIDRs.",
     "evaluation_rule": {
       "target_field": "source_ranges",
       "operator": "NOT_CONTAINS",
-      "prohibited_values": ["0.0.0.0/0"],
+      "prohibited_values": [
+        "0.0.0.0/0"
+      ],
       "condition": "allowed.ports contains '22'"
     },
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 1,
     "auto_remediation_supported": true,
-    "rationale": "Exposing SSH directly to 0.0.0.0/0 invites automated brute-force attacks and zero-day protocol exploits against compute workloads."
+    "rationale": "Exposing SSH directly to 0.0.0.0/0 invites automated brute-force attacks and zero-day protocol exploits against compute workloads.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-3.8",
     "policy_name": "Prohibit Direct Public External IPv4 Assignment to Compute Engine Instances",
     "governing_standard": "CIS GCP Benchmark v2.0 - 3.8",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-7(5)", "AC-4"],
-      "pci_dss_v4": ["Req 1.3.2"],
-      "soc_2": ["CC6.6"],
-      "iso_27001": ["A.8.20"]
+      "nist_800_53": [
+        "SC-7(5)",
+        "AC-4"
+      ],
+      "pci_dss_v4": [
+        "Req 1.3.2"
+      ],
+      "soc_2": [
+        "CC6.6"
+      ],
+      "iso_27001": [
+        "A.8.20"
+      ]
     },
     "category": "VM_EXTERNAL_IP",
-    "target_resource_types": ["compute.googleapis.com/Instance"],
+    "target_resource_types": [
+      "compute.googleapis.com/Instance"
+    ],
     "severity": "MEDIUM",
     "description": "Internal database, batch worker, and backend VMs must not possess external public IP addresses; outbound connectivity must route via Cloud NAT.",
     "evaluation_rule": {
@@ -93,44 +185,94 @@
     "enforcement_mode": "AUTONOMOUS_HEAL_ELIGIBLE",
     "remediation_sla_hours": 24,
     "auto_remediation_supported": true,
-    "rationale": "Public IPs bypass central egress inspection points and directly expose internal compute instances to external threat actors."
+    "rationale": "Public IPs bypass central egress inspection points and directly expose internal compute instances to external threat actors.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": true,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-4.1",
     "policy_name": "Prohibit Public Internet Exposure of GKE Master Control Plane Endpoint",
     "governing_standard": "CIS GCP Benchmark v2.0 - 4.1",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-3", "SC-7"],
-      "pci_dss_v4": ["Req 1.2.1", "Req 2.2.1"],
-      "soc_2": ["CC6.6"],
-      "iso_27001": ["A.8.20"]
+      "nist_800_53": [
+        "AC-3",
+        "SC-7"
+      ],
+      "pci_dss_v4": [
+        "Req 1.2.1",
+        "Req 2.2.1"
+      ],
+      "soc_2": [
+        "CC6.6"
+      ],
+      "iso_27001": [
+        "A.8.20"
+      ]
     },
     "category": "GKE_PUBLIC_ENDPOINT",
-    "target_resource_types": ["container.googleapis.com/Cluster"],
+    "target_resource_types": [
+      "container.googleapis.com/Cluster"
+    ],
     "severity": "CRITICAL",
     "description": "GKE cluster master authorized networks must not include 0.0.0.0/0 and private endpoint enforcement must be enabled.",
     "evaluation_rule": {
       "target_field": "master_authorized_networks",
       "operator": "NOT_CONTAINS",
-      "prohibited_values": ["0.0.0.0/0"]
+      "prohibited_values": [
+        "0.0.0.0/0"
+      ]
     },
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 1,
     "auto_remediation_supported": true,
-    "rationale": "An internet-facing Kubernetes API server is an extreme target for credential theft, remote code execution, and cluster compromise."
+    "rationale": "An internet-facing Kubernetes API server is an extreme target for credential theft, remote code execution, and cluster compromise.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-4.2",
     "policy_name": "Enforce GKE Workload Identity on Production Clusters",
     "governing_standard": "CIS GCP Benchmark v2.0 - 4.2",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-6", "IA-4"],
-      "pci_dss_v4": ["Req 7.2", "Req 8.2"],
-      "soc_2": ["CC6.3"],
-      "iso_27001": ["A.8.2"]
+      "nist_800_53": [
+        "AC-6",
+        "IA-4"
+      ],
+      "pci_dss_v4": [
+        "Req 7.2",
+        "Req 8.2"
+      ],
+      "soc_2": [
+        "CC6.3"
+      ],
+      "iso_27001": [
+        "A.8.2"
+      ]
     },
     "category": "GKE_WORKLOAD_IDENTITY_DISABLED",
-    "target_resource_types": ["container.googleapis.com/Cluster"],
+    "target_resource_types": [
+      "container.googleapis.com/Cluster"
+    ],
     "severity": "MEDIUM",
     "description": "GKE clusters must enable Workload Identity to eliminate the need for pods to mount long-lived service account JSON keys.",
     "evaluation_rule": {
@@ -140,20 +282,45 @@
     "enforcement_mode": "AUTONOMOUS_HEAL_ELIGIBLE",
     "remediation_sla_hours": 24,
     "auto_remediation_supported": true,
-    "rationale": "Static keys mounted inside pods can be exfiltrated via container escape or log inspection; Workload Identity issues short-lived tokens."
+    "rationale": "Static keys mounted inside pods can be exfiltrated via container escape or log inspection; Workload Identity issues short-lived tokens.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": true,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-5.1",
     "policy_name": "Enforce Cloud Storage Public Access Prevention (Prohibit allUsers / allAuthenticatedUsers)",
     "governing_standard": "CIS GCP Benchmark v2.0 - 5.1",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-3", "SC-28"],
-      "pci_dss_v4": ["Req 7.1", "Req 7.2"],
-      "soc_2": ["CC6.1", "CC6.6"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "AC-3",
+        "SC-28"
+      ],
+      "pci_dss_v4": [
+        "Req 7.1",
+        "Req 7.2"
+      ],
+      "soc_2": [
+        "CC6.1",
+        "CC6.6"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "STORAGE_PUBLIC_ACCESS",
-    "target_resource_types": ["storage.googleapis.com/Bucket"],
+    "target_resource_types": [
+      "storage.googleapis.com/Bucket"
+    ],
     "severity": "HIGH",
     "description": "Cloud Storage buckets must enforce Public Access Prevention (PAP=enforced) and contain no IAM bindings granting roles to allUsers or allAuthenticatedUsers.",
     "evaluation_rule": {
@@ -164,20 +331,45 @@
     "enforcement_mode": "AUTONOMOUS_HEAL_ELIGIBLE",
     "remediation_sla_hours": 2,
     "auto_remediation_supported": true,
-    "rationale": "Accidental exposure of sensitive corporate documents or customer PII via misconfigured bucket permissions is a primary data breach vector."
+    "rationale": "Accidental exposure of sensitive corporate documents or customer PII via misconfigured bucket permissions is a primary data breach vector.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": true,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-5.2",
     "policy_name": "Enforce Uniform Bucket-Level Access (Prohibit Fine-Grained Object ACLs and Authenticated URLs)",
     "governing_standard": "CIS GCP Benchmark v2.0 - 5.2",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-3", "SC-28"],
-      "pci_dss_v4": ["Req 7.1", "Req 7.2"],
-      "soc_2": ["CC6.1", "CC6.3"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "AC-3",
+        "SC-28"
+      ],
+      "pci_dss_v4": [
+        "Req 7.1",
+        "Req 7.2"
+      ],
+      "soc_2": [
+        "CC6.1",
+        "CC6.3"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "STORAGE_OBJECT_ACL_EXPOSURE",
-    "target_resource_types": ["storage.googleapis.com/Bucket"],
+    "target_resource_types": [
+      "storage.googleapis.com/Bucket"
+    ],
     "severity": "HIGH",
     "description": "Cloud Storage buckets must enforce Uniform Bucket-Level Access (UBLA=true) to disable legacy object ACLs, prohibit individual objects from exposing authenticated or public URLs (allAuthenticatedUsers / allUsers), and ensure centralized IAM-only governance.",
     "evaluation_rule": {
@@ -188,20 +380,44 @@
     "enforcement_mode": "AUTONOMOUS_HEAL_ELIGIBLE",
     "remediation_sla_hours": 4,
     "auto_remediation_supported": true,
-    "rationale": "Object-level ACLs permit individual objects to be shared with allAuthenticatedUsers or allUsers, bypassing bucket-level IAM policies and exposing sensitive files via public or authenticated URLs."
+    "rationale": "Object-level ACLs permit individual objects to be shared with allAuthenticatedUsers or allUsers, bypassing bucket-level IAM policies and exposing sensitive files via public or authenticated URLs.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": true,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-5.3",
     "policy_name": "Enforce Customer-Managed Encryption Keys (CMEK) on Sensitive Cloud Storage Buckets",
     "governing_standard": "CIS GCP Benchmark v2.0 - 5.3",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-13", "SC-28"],
-      "pci_dss_v4": ["Req 3.4", "Req 3.5"],
-      "soc_2": ["CC6.7"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "SC-13",
+        "SC-28"
+      ],
+      "pci_dss_v4": [
+        "Req 3.4",
+        "Req 3.5"
+      ],
+      "soc_2": [
+        "CC6.7"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "STORAGE_MISSING_CMEK",
-    "target_resource_types": ["storage.googleapis.com/Bucket"],
+    "target_resource_types": [
+      "storage.googleapis.com/Bucket"
+    ],
     "severity": "HIGH",
     "description": "Production and audit storage buckets must utilize Cloud KMS Customer-Managed Encryption Keys (CMEK) rather than default Google-managed keys.",
     "evaluation_rule": {
@@ -211,44 +427,93 @@
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 4,
     "auto_remediation_supported": true,
-    "rationale": "CMEK ensures the enterprise retains cryptographic sovereign control over data access, enabling cryptographic revocation."
+    "rationale": "CMEK ensures the enterprise retains cryptographic sovereign control over data access, enabling cryptographic revocation.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-6.2",
     "policy_name": "Prohibit Public IPv4 Addresses and 0.0.0.0/0 Authorized Networks on Cloud SQL",
     "governing_standard": "CIS GCP Benchmark v2.0 - 6.2",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-7", "AC-3"],
-      "pci_dss_v4": ["Req 1.2", "Req 1.3"],
-      "soc_2": ["CC6.6"],
-      "iso_27001": ["A.8.20"]
+      "nist_800_53": [
+        "SC-7",
+        "AC-3"
+      ],
+      "pci_dss_v4": [
+        "Req 1.2",
+        "Req 1.3"
+      ],
+      "soc_2": [
+        "CC6.6"
+      ],
+      "iso_27001": [
+        "A.8.20"
+      ]
     },
     "category": "DATABASE_PUBLIC_IP",
-    "target_resource_types": ["sqladmin.googleapis.com/Instance"],
+    "target_resource_types": [
+      "sqladmin.googleapis.com/Instance"
+    ],
     "severity": "CRITICAL",
     "description": "Cloud SQL database instances must not be configured with public IPv4 addresses or authorized networks permitting 0.0.0.0/0. Communication must occur over Private Service Access (PSA).",
     "evaluation_rule": {
       "target_field": "authorized_networks",
       "operator": "NOT_CONTAINS",
-      "prohibited_values": ["0.0.0.0/0"]
+      "prohibited_values": [
+        "0.0.0.0/0"
+      ]
     },
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 1,
     "auto_remediation_supported": true,
-    "rationale": "Public database endpoints allow direct attacks against database ports (5432/3306), risking credential stuffing and data exfiltration."
+    "rationale": "Public database endpoints allow direct attacks against database ports (5432/3306), risking credential stuffing and data exfiltration.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-6.7",
     "policy_name": "Enforce Automated Daily Backups and Point-In-Time Recovery on Cloud SQL",
     "governing_standard": "CIS GCP Benchmark v2.0 - 6.7",
     "regulatory_mappings": {
-      "nist_800_53": ["CP-9", "CP-10"],
-      "pci_dss_v4": ["Req 12.10"],
-      "soc_2": ["A1.2"],
-      "iso_27001": ["A.8.13"]
+      "nist_800_53": [
+        "CP-9",
+        "CP-10"
+      ],
+      "pci_dss_v4": [
+        "Req 12.10"
+      ],
+      "soc_2": [
+        "A1.2"
+      ],
+      "iso_27001": [
+        "A.8.13"
+      ]
     },
     "category": "DATABASE_BACKUP_DISABLED",
-    "target_resource_types": ["sqladmin.googleapis.com/Instance"],
+    "target_resource_types": [
+      "sqladmin.googleapis.com/Instance"
+    ],
     "severity": "LOW",
     "description": "Cloud SQL instances must have automated daily backups enabled and binary logging configured for point-in-time recovery (PITR).",
     "evaluation_rule": {
@@ -259,68 +524,143 @@
     "enforcement_mode": "AUTONOMOUS_HEAL_ELIGIBLE",
     "remediation_sla_hours": 24,
     "auto_remediation_supported": true,
-    "rationale": "Disabling automated backups risks total permanent data loss in the event of ransomware, human operational error, or regional catastrophe."
+    "rationale": "Disabling automated backups risks total permanent data loss in the event of ransomware, human operational error, or regional catastrophe.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": true,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-CIS-GCP-7.1",
     "policy_name": "Restrict BigQuery Dataset Access from allAuthenticatedUsers & Public Principals",
     "governing_standard": "CIS GCP Benchmark v2.0 - 7.1",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-3", "SC-28"],
-      "pci_dss_v4": ["Req 7.1"],
-      "soc_2": ["CC6.1"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "AC-3",
+        "SC-28"
+      ],
+      "pci_dss_v4": [
+        "Req 7.1"
+      ],
+      "soc_2": [
+        "CC6.1"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "BIGQUERY_DATASET_PUBLIC",
-    "target_resource_types": ["bigquery.googleapis.com/Dataset"],
+    "target_resource_types": [
+      "bigquery.googleapis.com/Dataset"
+    ],
     "severity": "CRITICAL",
     "description": "BigQuery dataset ACLs must not grant READER, WRITER, or OWNER roles to allAuthenticatedUsers or allUsers.",
     "evaluation_rule": {
       "target_field": "access.specialGroup",
       "operator": "NOT_CONTAINS_ANY",
-      "prohibited_values": ["allAuthenticatedUsers", "allUsers"]
+      "prohibited_values": [
+        "allAuthenticatedUsers",
+        "allUsers"
+      ]
     },
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 1,
     "auto_remediation_supported": true,
-    "rationale": "Granting access to allAuthenticatedUsers allows any entity with a valid Google account worldwide to read enterprise data warehouse tables."
+    "rationale": "Granting access to allAuthenticatedUsers allows any entity with a valid Google account worldwide to read enterprise data warehouse tables.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-SERVERLESS-0.1",
     "policy_name": "Restrict Unauthenticated Invocations on Internal Cloud Run Services",
     "governing_standard": "GCP Cloud Run Security Baseline",
     "regulatory_mappings": {
-      "nist_800_53": ["AC-3", "IA-2"],
-      "pci_dss_v4": ["Req 8.2"],
-      "soc_2": ["CC6.1"],
-      "iso_27001": ["A.8.5"]
+      "nist_800_53": [
+        "AC-3",
+        "IA-2"
+      ],
+      "pci_dss_v4": [
+        "Req 8.2"
+      ],
+      "soc_2": [
+        "CC6.1"
+      ],
+      "iso_27001": [
+        "A.8.5"
+      ]
     },
     "category": "CLOUDRUN_UNAUTHENTICATED",
-    "target_resource_types": ["run.googleapis.com/Service"],
+    "target_resource_types": [
+      "run.googleapis.com/Service"
+    ],
     "severity": "HIGH",
     "description": "Internal business microservices deployed on Cloud Run must require authentication (roles/run.invoker restricted to authorized service accounts).",
     "evaluation_rule": {
       "target_field": "invoker_binding.member",
       "operator": "NOT_EQUALS",
-      "prohibited_values": ["allUsers"]
+      "prohibited_values": [
+        "allUsers"
+      ]
     },
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 4,
     "auto_remediation_supported": true,
-    "rationale": "Unauthenticated endpoints in internal microservice chains allow unauthenticated external actors to trigger backend business logic."
+    "rationale": "Unauthenticated endpoints in internal microservice chains allow unauthenticated external actors to trigger backend business logic.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-KMS-0.1",
     "policy_name": "Enforce 90-Day Automatic Key Rotation on Cloud KMS CryptoKeys",
     "governing_standard": "CIS GCP Benchmark v2.0 - 1.10",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-12", "SC-13"],
-      "pci_dss_v4": ["Req 3.5.1", "Req 3.6"],
-      "soc_2": ["CC6.7"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "SC-12",
+        "SC-13"
+      ],
+      "pci_dss_v4": [
+        "Req 3.5.1",
+        "Req 3.6"
+      ],
+      "soc_2": [
+        "CC6.7"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "KMS_KEY_ROTATION_DISABLED",
-    "target_resource_types": ["cloudkms.googleapis.com/CryptoKey"],
+    "target_resource_types": [
+      "cloudkms.googleapis.com/CryptoKey"
+    ],
     "severity": "HIGH",
     "description": "Cloud KMS symmetric encryption keys must have an automated rotation period configured not exceeding 90 days (7776000s).",
     "evaluation_rule": {
@@ -330,20 +670,44 @@
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 12,
     "auto_remediation_supported": true,
-    "rationale": "Key rotation limits the amount of ciphertext compromised if a specific cryptographic key version is ever leaked or broken."
+    "rationale": "Key rotation limits the amount of ciphertext compromised if a specific cryptographic key version is ever leaked or broken.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-SECRETS-0.1",
     "policy_name": "Enforce CMEK and Automatic Rotation on Secret Manager Secrets",
     "governing_standard": "Google Cloud Security Foundations",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-28", "IA-5"],
-      "pci_dss_v4": ["Req 3.4", "Req 8.2"],
-      "soc_2": ["CC6.7"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "SC-28",
+        "IA-5"
+      ],
+      "pci_dss_v4": [
+        "Req 3.4",
+        "Req 8.2"
+      ],
+      "soc_2": [
+        "CC6.7"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "SECRET_UNENCRYPTED",
-    "target_resource_types": ["secretmanager.googleapis.com/Secret"],
+    "target_resource_types": [
+      "secretmanager.googleapis.com/Secret"
+    ],
     "severity": "HIGH",
     "description": "Production API tokens and database credentials stored in Secret Manager must be encrypted with Customer-Managed Encryption Keys.",
     "evaluation_rule": {
@@ -353,20 +717,43 @@
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 12,
     "auto_remediation_supported": true,
-    "rationale": "Sensitive secrets must remain protected under enterprise-managed cryptographic keys to satisfy PCI-DSS mandate."
+    "rationale": "Sensitive secrets must remain protected under enterprise-managed cryptographic keys to satisfy PCI-DSS mandate.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   },
   {
     "policy_id": "POL-PUBSUB-0.1",
     "policy_name": "Enforce Customer-Managed Encryption Keys (CMEK) on Sensitive Pub/Sub Topics",
     "governing_standard": "CIS GCP Benchmark v2.0 - 5.3 Extension",
     "regulatory_mappings": {
-      "nist_800_53": ["SC-13", "SC-28"],
-      "pci_dss_v4": ["Req 3.4"],
-      "soc_2": ["CC6.7"],
-      "iso_27001": ["A.8.24"]
+      "nist_800_53": [
+        "SC-13",
+        "SC-28"
+      ],
+      "pci_dss_v4": [
+        "Req 3.4"
+      ],
+      "soc_2": [
+        "CC6.7"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
     },
     "category": "PUBSUB_MISSING_CMEK",
-    "target_resource_types": ["pubsub.googleapis.com/Topic"],
+    "target_resource_types": [
+      "pubsub.googleapis.com/Topic"
+    ],
     "severity": "MEDIUM",
     "description": "Production message bus topics transmitting payment or customer events must be encrypted at rest using Cloud KMS CMEK.",
     "evaluation_rule": {
@@ -376,6 +763,117 @@
     "enforcement_mode": "AUDIT_AND_GATE",
     "remediation_sla_hours": 24,
     "auto_remediation_supported": true,
-    "rationale": "Pub/Sub messages buffered in memory and disk queues must be cryptographically protected under customer control."
+    "rationale": "Pub/Sub messages buffered in memory and disk queues must be cryptographically protected under customer control.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
+  },
+  {
+    "policy_id": "POL-CIS-GCP-6.4",
+    "policy_name": "Require Encrypted-Only Connections for Cloud SQL",
+    "governing_standard": "CIS GCP Benchmark v2.0 - 6.4",
+    "regulatory_mappings": {
+      "nist_800_53": [
+        "SC-8"
+      ],
+      "pci_dss_v4": [
+        "Req 4.2"
+      ],
+      "soc_2": [
+        "CC6.7"
+      ],
+      "iso_27001": [
+        "A.8.24"
+      ]
+    },
+    "category": "DATABASE_SSL_ENFORCEMENT",
+    "target_resource_types": [
+      "sqladmin.googleapis.com/Instance"
+    ],
+    "severity": "HIGH",
+    "description": "Cloud SQL instances must reject unencrypted client connections where supported by the workload and client fleet.",
+    "evaluation_rule": {
+      "target_field": "settings.ipConfiguration.sslMode",
+      "operator": "EQUALS",
+      "expected_value": "ENCRYPTED_ONLY"
+    },
+    "enforcement_mode": "AUDIT_AND_GATE",
+    "remediation_sla_hours": 8,
+    "auto_remediation_supported": false,
+    "rationale": "Changing TLS requirements can break legacy clients and requires compatibility verification.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [
+      "Confirm all production clients support TLS",
+      "Validate maintenance window and connection pool behavior"
+    ],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
+  },
+  {
+    "policy_id": "POL-FUNCTIONS-0.1",
+    "policy_name": "Restrict Cloud Functions Ingress",
+    "governing_standard": "Google Cloud Security Baseline - Functions 0.1",
+    "regulatory_mappings": {
+      "nist_800_53": [
+        "AC-3",
+        "SC-7"
+      ],
+      "soc_2": [
+        "CC6.6",
+        "CC7.1"
+      ],
+      "iso_27001": [
+        "A.8.20"
+      ]
+    },
+    "category": "FUNCTION_PUBLIC_INGRESS",
+    "target_resource_types": [
+      "cloudfunctions.googleapis.com/CloudFunction"
+    ],
+    "severity": "MEDIUM",
+    "description": "Cloud Functions should use internal ingress unless an explicitly approved public endpoint is required. Runtime lifecycle compliance is evaluated separately.",
+    "evaluation_rule": {
+      "target_field": "ingressSettings",
+      "operator": "NOT_EQUALS",
+      "prohibited_values": [
+        "ALLOW_ALL"
+      ]
+    },
+    "enforcement_mode": "AUDIT_AND_GATE",
+    "remediation_sla_hours": 24,
+    "auto_remediation_supported": false,
+    "rationale": "Restricting ingress may affect event triggers and callers, so dependency validation and approval are required.",
+    "policy_version": "1.0.0",
+    "effective_from": "2026-10-12T00:00:00Z",
+    "evaluation_logic_version": "1",
+    "required_conditions": [
+      "Confirm caller paths and trigger compatibility",
+      "Confirm internal ingress is supported by the function architecture"
+    ],
+    "outcomes": {
+      "compliant": "PASS",
+      "non_compliant": "FAIL",
+      "not_evaluable": "UNKNOWN"
+    },
+    "last_reviewed_at": "2026-10-12T00:00:00Z",
+    "autonomous_remediation_eligibility": false,
+    "runtime_authorization_required": true
   }
 ]

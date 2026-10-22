@@ -194,11 +194,11 @@ class TestComplianceEngine(unittest.TestCase):
             self.assertIsNotNone(plan.action_title)
 
 
-class TestComplianceCopilotAgent(unittest.TestCase):
+class TestComplianceAgent(unittest.TestCase):
 
     def setUp(self):
-        from src.compliance_engine.agent.compliance_copilot_agent import ComplianceCopilotAgent
-        self.agent = ComplianceCopilotAgent()
+        from src.compliance_engine.agent.compliance_agent import ComplianceAgent
+        self.agent = ComplianceAgent()
 
     def test_autoheal_violations_query(self):
         query = "how many auto-heal violations are present?"
@@ -384,6 +384,52 @@ class TestComplianceCopilotAgent(unittest.TestCase):
         self.assertEqual(res["intent"], "GCP_CONNECTOR_OVERVIEW")
         self.assertEqual(res["connection_status"], "READY")
         self.assertIn("Cloud Asset Inventory API", res["answer_markdown"])
+
+    def test_split_sql_findings_and_loader(self):
+        from data.loader import get_all_findings, get_resource_by_id, load_policies, load_remediations
+        findings = get_all_findings()
+        self.assertEqual(len(findings), 20)
+
+        # Check split findings
+        backup_f = next((f for f in findings if f.finding_id == "SCC-SQL-MULTI-4401"), None)
+        ssl_f = next((f for f in findings if f.finding_id == "SCC-SQL-MULTI-4401-SSL"), None)
+        self.assertIsNotNone(backup_f)
+        self.assertIsNotNone(ssl_f)
+        self.assertEqual(backup_f.category, FindingCategory.DATABASE_BACKUP_DISABLED)
+        self.assertEqual(ssl_f.category, FindingCategory.DATABASE_SSL_ENFORCEMENT)
+
+        # Check resource reconciliation
+        res = get_resource_by_id("analytics-warehouse-export-prod")
+        self.assertIsNotNone(res)
+        self.assertEqual(res["compliance_posture"]["status"], "UNKNOWN_REQUIRES_RESCAN")
+        self.assertEqual(res["compliance_posture"]["passing_controls_count"], 3)
+        self.assertEqual(res["compliance_posture"]["active_violations_count"], 0)
+
+        # Check policy and remediation coverage
+        policies = load_policies()
+        remediations = load_remediations()
+        self.assertEqual(len(policies), 18)
+        self.assertEqual(len(remediations), 18)
+
+    def test_comprehensive_planner_new_categories(self):
+        from src.compliance_engine.planner.comprehensive_planner import ComprehensiveRemediationPlanner
+        from src.compliance_engine.governance.risk_engine import RiskEngine
+        from data.loader import get_finding_by_key
+        planner = ComprehensiveRemediationPlanner(RiskEngine())
+
+        # Test SSL finding
+        ssl_finding = get_finding_by_key("sql-ssl-enforcement")
+        self.assertIsNotNone(ssl_finding)
+        ssl_plan = planner.plan_remediation(ssl_finding)
+        self.assertEqual(ssl_plan.tool_name, "gcp_sql_enforce_ssl_only")
+        self.assertEqual(ssl_plan.rollback_procedure.strategy_type, "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT")
+
+        # Test Cloud Function finding
+        func_finding = get_finding_by_key("func-runtime-dev")
+        self.assertIsNotNone(func_finding)
+        func_plan = planner.plan_remediation(func_finding)
+        self.assertEqual(func_plan.tool_name, "gcp_cloudfunction_harden")
+        self.assertEqual(func_plan.rollback_procedure.strategy_type, "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT")
 
 
 if __name__ == "__main__":

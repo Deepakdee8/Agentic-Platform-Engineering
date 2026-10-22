@@ -1,4 +1,4 @@
-[ 
+[
   {
     "resource_id": "projects/payments-prod-vpc/global/firewalls/allow-ssh-ingress",
     "resource_name": "allow-ssh-ingress",
@@ -15,16 +15,37 @@
       "network": "projects/payments-prod-vpc/global/networks/payments-vpc",
       "direction": "INGRESS",
       "priority": 1000,
-      "source_ranges": ["0.0.0.0/0"],
-      "allowed": [{ "IPProtocol": "tcp", "ports": ["22"] }],
-      "target_tags": ["production-backend"]
+      "source_ranges": [
+        "0.0.0.0/0"
+      ],
+      "allowed": [
+        {
+          "IPProtocol": "tcp",
+          "ports": [
+            "22"
+          ]
+        }
+      ],
+      "target_tags": [
+        "production-backend"
+      ]
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 2,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-FW-99201"]
-    }
+      "violation_ids": [
+        "SCC-FW-99201"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod-vpc/global/firewalls/allow-ssh-ingress",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/zones/us-central1-a/clusters/payments-gke-prod",
@@ -41,17 +62,34 @@
     "current_configuration": {
       "node_pools_count": 3,
       "total_nodes": 12,
-      "master_authorized_networks": ["0.0.0.0/0"],
+      "master_authorized_networks": [
+        "0.0.0.0/0"
+      ],
       "private_endpoint_enforced": false,
-      "network_policy_config": { "enabled": false },
-      "workload_identity_config": { "workload_pool": "payments-prod.svc.id.goog" }
+      "network_policy_config": {
+        "enabled": false
+      },
+      "workload_identity_config": {
+        "workload_pool": "payments-prod.svc.id.goog"
+      }
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 4,
       "active_violations_count": 2,
-      "violation_ids": ["SCC-GKE-30192", "SCC-GKE-MULTI-9201"]
-    }
+      "violation_ids": [
+        "SCC-GKE-30192",
+        "SCC-GKE-MULTI-9201"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/zones/us-central1-a/clusters/payments-gke-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/instances/customer-db-pg-prod",
@@ -69,17 +107,35 @@
       "database_version": "POSTGRES_15",
       "tier": "db-custom-16-65536",
       "ipv4_enabled": true,
-      "authorized_networks": [{ "value": "0.0.0.0/0", "name": "any" }],
+      "authorized_networks": [
+        {
+          "value": "0.0.0.0/0",
+          "name": "any"
+        }
+      ],
       "private_network": null,
-      "backup_configuration": { "enabled": true, "binary_logging_enabled": true },
+      "backup_configuration": {
+        "enabled": true,
+        "binary_logging_enabled": true
+      },
       "ssl_mode": "ENCRYPTED_ONLY"
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 5,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-SQL-77102"]
-    }
+      "violation_ids": [
+        "SCC-SQL-77102"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/instances/customer-db-pg-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/analytics-prod/datasets/customer_churn",
@@ -96,17 +152,35 @@
     "current_configuration": {
       "default_table_expiration_ms": null,
       "access": [
-        { "role": "READER", "specialGroup": "allAuthenticatedUsers" },
-        { "role": "OWNER", "groupByEmail": "data-platform-admins@enterprise.internal" }
+        {
+          "role": "READER",
+          "specialGroup": "allAuthenticatedUsers"
+        },
+        {
+          "role": "OWNER",
+          "groupByEmail": "data-platform-admins@enterprise.internal"
+        }
       ],
-      "default_encryption": { "kms_key_name": null }
+      "default_encryption": {
+        "kms_key_name": null
+      }
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 2,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-BQ-89102"]
-    }
+      "violation_ids": [
+        "SCC-BQ-89102"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/analytics-prod/datasets/customer_churn",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
@@ -122,15 +196,27 @@
     "data_classification": "INTERNAL_OPERATIONAL",
     "current_configuration": {
       "display_name": "Nightly Analytics Pipeline Service Account",
-      "roles": ["roles/owner"],
+      "roles": [
+        "roles/owner"
+      ],
       "disabled": false
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 1,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-IAM-5102"]
-    }
+      "violation_ids": [
+        "SCC-IAM-5102"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/locations/us-central1/services/payment-processor-service",
@@ -146,7 +232,10 @@
     "data_classification": "RESTRICTED_PCI_PII",
     "current_configuration": {
       "ingress": "all",
-      "invoker_binding": { "member": "allUsers", "role": "roles/run.invoker" },
+      "invoker_binding": {
+        "member": "allUsers",
+        "role": "roles/run.invoker"
+      },
       "min_instances": 3,
       "max_instances": 50
     },
@@ -154,8 +243,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 3,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-RUN-44102"]
-    }
+      "violation_ids": [
+        "SCC-RUN-44102"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/locations/us-central1/services/payment-processor-service",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/buckets/financial-audit-logs-prod",
@@ -181,8 +280,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 3,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-GCS-91823"]
-    }
+      "violation_ids": [
+        "SCC-GCS-91823"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/buckets/financial-audit-logs-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/payment-kek",
@@ -206,8 +315,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 2,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-KMS-77120"]
-    }
+      "violation_ids": [
+        "SCC-KMS-77120"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/payment-kek",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/orders-prod/instances/orders-mysql-prod",
@@ -225,17 +344,35 @@
       "database_version": "MYSQL_8_0",
       "tier": "db-custom-8-32768",
       "ipv4_enabled": true,
-      "authorized_networks": [{ "value": "198.51.100.22/32", "name": "partner-vpn" }],
+      "authorized_networks": [
+        {
+          "value": "198.51.100.22/32",
+          "name": "partner-vpn"
+        }
+      ],
       "private_network": "projects/orders-prod/global/networks/orders-vpc",
-      "backup_configuration": { "enabled": false },
+      "backup_configuration": {
+        "enabled": false
+      },
       "ssl_mode": "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 3,
       "active_violations_count": 2,
-      "violation_ids": ["SCC-SQL-MULTI-4401"]
-    }
+      "violation_ids": [
+        "SCC-SQL-MULTI-4401",
+        "SCC-SQL-MULTI-4401-SSL"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/orders-prod/instances/orders-mysql-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/secrets/stripe-live-api-key",
@@ -250,7 +387,9 @@
     "criticality_tier": "TIER_1_MISSION_CRITICAL",
     "data_classification": "RESTRICTED_PCI_PII",
     "current_configuration": {
-      "replication": { "automatic": {} },
+      "replication": {
+        "automatic": {}
+      },
       "customer_managed_encryption": null,
       "rotation_period": null
     },
@@ -258,8 +397,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 1,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-SEC-33109"]
-    }
+      "violation_ids": [
+        "SCC-SEC-33109"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/secrets/stripe-live-api-key",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/orders-prod/clusters/order-processing-cluster",
@@ -274,17 +423,31 @@
     "criticality_tier": "TIER_2_BUSINESS_CRITICAL",
     "data_classification": "CONFIDENTIAL_FINANCIAL",
     "current_configuration": {
-      "master_authorized_networks": ["10.128.0.0/16"],
+      "master_authorized_networks": [
+        "10.128.0.0/16"
+      ],
       "private_endpoint_enforced": true,
       "workload_identity_config": null,
-      "shielded_nodes": { "enabled": true }
+      "shielded_nodes": {
+        "enabled": true
+      }
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 4,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-GKE-41029"]
-    }
+      "violation_ids": [
+        "SCC-GKE-41029"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/orders-prod/clusters/order-processing-cluster",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/core-staging/zones/us-central1-a/instances/db-worker-vm-01",
@@ -301,15 +464,30 @@
     "current_configuration": {
       "machine_type": "n2-standard-4",
       "internal_ip": "10.128.4.12",
-      "access_configs": [{ "type": "ONE_TO_ONE_NAT", "nat_ip": "35.202.14.89" }],
+      "access_configs": [
+        {
+          "type": "ONE_TO_ONE_NAT",
+          "nat_ip": "35.202.14.89"
+        }
+      ],
       "service_account": "staging-worker-sa@core-staging.iam.gserviceaccount.com"
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 3,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-GCE-55102"]
-    }
+      "violation_ids": [
+        "SCC-GCE-55102"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/core-staging/zones/us-central1-a/instances/db-worker-vm-01",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "STAGING",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/topics/payment-events-topic-prod",
@@ -331,8 +509,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 2,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-PUBSUB-1920"]
-    }
+      "violation_ids": [
+        "SCC-PUBSUB-1920"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/payments-prod/topics/payment-events-topic-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/retail-dev-env/buckets/retail-app-invoices-dev",
@@ -348,16 +536,32 @@
     "data_classification": "INTERNAL_OPERATIONAL",
     "current_configuration": {
       "iam_bindings": [
-        { "role": "roles/storage.objectViewer", "members": ["allUsers"] },
-        { "role": "roles/storage.admin", "members": ["serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"] }
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "allUsers"
+          ]
+        },
+        {
+          "role": "roles/storage.admin",
+          "members": [
+            "serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"
+          ]
+        }
       ],
       "public_access_prevention": "unspecified",
       "uniform_bucket_level_access": false,
       "object_level_acls_enabled": true,
       "object_exposure": {
         "authenticated_urls_exposed": true,
-        "exposed_principals": ["allAuthenticatedUsers", "allUsers"],
-        "sample_exposed_objects": ["invoices/2026/inv-9012.pdf", "receipts/rec-4412.png"]
+        "exposed_principals": [
+          "allAuthenticatedUsers",
+          "allUsers"
+        ],
+        "sample_exposed_objects": [
+          "invoices/2026/inv-9012.pdf",
+          "receipts/rec-4412.png"
+        ]
       },
       "lifecycle_rules": []
     },
@@ -365,8 +569,19 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 2,
       "active_violations_count": 2,
-      "violation_ids": ["SCC-GCS-84920", "SCC-GCS-MULTI-84920"]
-    }
+      "violation_ids": [
+        "SCC-GCS-84920",
+        "SCC-GCS-MULTI-84920"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/retail-dev-env/buckets/retail-app-invoices-dev",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "DEVELOPMENT",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/analytics-dev/instances/analytics-mysql-dev",
@@ -385,14 +600,26 @@
       "tier": "db-f1-micro",
       "ipv4_enabled": false,
       "private_network": "projects/analytics-dev/global/networks/dev-vpc",
-      "backup_configuration": { "enabled": false }
+      "backup_configuration": {
+        "enabled": false
+      }
     },
     "compliance_posture": {
       "status": "NON_COMPLIANT",
       "passing_controls_count": 4,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-SQL-21094"]
-    }
+      "violation_ids": [
+        "SCC-SQL-21094"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/analytics-dev/instances/analytics-mysql-dev",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "DEVELOPMENT",
+    "dependency_refs": []
   },
   {
     "resource_id": "serviceAccount:ci-deployer@dev-core.iam/keys/ci-deployer-sa-key-9281",
@@ -415,8 +642,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 1,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-IAM-11094"]
-    }
+      "violation_ids": [
+        "SCC-IAM-11094"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "serviceAccount:ci-deployer@dev-core.iam/keys/ci-deployer-sa-key-9281",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "DEVELOPMENT",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/retail-dev-env/locations/us-central1/functions/nightly-cleanup-function-dev",
@@ -439,8 +676,18 @@
       "status": "NON_COMPLIANT",
       "passing_controls_count": 2,
       "active_violations_count": 1,
-      "violation_ids": ["SCC-FUNC-11029"]
-    }
+      "violation_ids": [
+        "SCC-FUNC-11029"
+      ],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "normalized_findings"
+    },
+    "resource_uid": "projects/retail-dev-env/locations/us-central1/functions/nightly-cleanup-function-dev",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "DEVELOPMENT",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/security-prod/buckets/secure-backup-vault-prod",
@@ -458,7 +705,10 @@
       "public_access_prevention": "enforced",
       "uniform_bucket_level_access": true,
       "versioning_enabled": true,
-      "retention_policy": { "retention_period": "220752000s", "is_locked": true },
+      "retention_policy": {
+        "retention_period": "220752000s",
+        "is_locked": true
+      },
       "encryption": "Customer-Managed Key (CMEK)",
       "default_kms_key_name": "projects/security-prod/locations/us-central1/keyRings/kms-vault/cryptoKeys/vault-master-key"
     },
@@ -467,7 +717,20 @@
       "passing_controls_count": 6,
       "active_violations_count": 0,
       "violation_ids": []
-    }
+    },
+    "last_compliance_evaluation": {
+      "evaluation_id": "SCC-AUDIT-CLEAN-001",
+      "result": "COMPLIANT",
+      "policy_id": "POL-CIS-GCP-5.1",
+      "evaluated_at": "2026-10-12T00:00:00Z",
+      "summary": "Zero active violations reported; no remediation action required."
+    },
+    "resource_uid": "projects/security-prod/buckets/secure-backup-vault-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/analytics-prod/buckets/analytics-warehouse-export-prod",
@@ -484,16 +747,32 @@
     "current_configuration": {
       "public_access_prevention": "enforced",
       "uniform_bucket_level_access": true,
-      "lifecycle_rules": [{ "action": "SetStorageClass: COLDLINE", "condition": { "age": 90 } }],
+      "lifecycle_rules": [
+        {
+          "action": "SetStorageClass: COLDLINE",
+          "condition": {
+            "age": 90
+          }
+        }
+      ],
       "encryption": "Google-Managed Default Key",
       "default_kms_key_name": null
     },
     "compliance_posture": {
-      "status": "NON_COMPLIANT",
+      "status": "UNKNOWN_REQUIRES_RESCAN",
       "passing_controls_count": 3,
-      "active_violations_count": 1,
-      "violation_ids": ["SCC-GCS-PARTIAL-99120"]
-    }
+      "active_violations_count": 0,
+      "violation_ids": [],
+      "last_evaluated_at": "2026-10-12T00:00:00Z",
+      "evaluation_source": "stale_reference_reconciliation",
+      "reconciliation_note": "One or more listed violation IDs had no matching finding record; fresh inventory/policy evaluation required before asserting compliance."
+    },
+    "resource_uid": "projects/analytics-prod/buckets/analytics-warehouse-export-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/instances/global-ledger-spanner-prod",
@@ -519,7 +798,13 @@
       "passing_controls_count": 5,
       "active_violations_count": 0,
       "violation_ids": []
-    }
+    },
+    "resource_uid": "projects/payments-prod/instances/global-ledger-spanner-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/payments-prod/instances/fraud-detection-bigtable-prod",
@@ -536,15 +821,31 @@
     "current_configuration": {
       "display_name": "Fraud Detection Bigtable Cluster",
       "instance_type": "PRODUCTION",
-      "clusters": [{ "cluster_id": "c1", "zone": "us-central1-b", "num_nodes": 6 }],
-      "app_profiles": [{ "routing_policy": "MULTI_CLUSTER_ROUTING" }]
+      "clusters": [
+        {
+          "cluster_id": "c1",
+          "zone": "us-central1-b",
+          "num_nodes": 6
+        }
+      ],
+      "app_profiles": [
+        {
+          "routing_policy": "MULTI_CLUSTER_ROUTING"
+        }
+      ]
     },
     "compliance_posture": {
       "status": "COMPLIANT",
       "passing_controls_count": 4,
       "active_violations_count": 0,
       "violation_ids": []
-    }
+    },
+    "resource_uid": "projects/payments-prod/instances/fraud-detection-bigtable-prod",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/shared-networking-prod/global/networks/corporate-shared-vpc",
@@ -560,7 +861,9 @@
     "data_classification": "RESTRICTED_PCI_PII",
     "current_configuration": {
       "auto_create_subnetworks": false,
-      "routing_config": { "routing_mode": "GLOBAL" },
+      "routing_config": {
+        "routing_mode": "GLOBAL"
+      },
       "enable_private_service_access": true,
       "firewall_rules_count": 18
     },
@@ -569,7 +872,13 @@
       "passing_controls_count": 5,
       "active_violations_count": 0,
       "violation_ids": []
-    }
+    },
+    "resource_uid": "projects/shared-networking-prod/global/networks/corporate-shared-vpc",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   },
   {
     "resource_id": "projects/shared-networking-prod/global/sinks/org-compliance-audit-sink",
@@ -593,6 +902,12 @@
       "passing_controls_count": 4,
       "active_violations_count": 0,
       "violation_ids": []
-    }
+    },
+    "resource_uid": "projects/shared-networking-prod/global/sinks/org-compliance-audit-sink",
+    "last_observed_at": "2026-10-12T00:00:00Z",
+    "configuration_version": "seed-1",
+    "inventory_source": "Google Cloud Security Command Center / seeded inventory",
+    "environment_class": "PRODUCTION",
+    "dependency_refs": []
   }
 ]

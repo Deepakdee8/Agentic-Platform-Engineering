@@ -22,7 +22,12 @@
       "risk_level": "CRITICAL",
       "blast_radius": {
         "affected_services_count": 8,
-        "direct_dependencies": ["payments-vpc", "kubernetes-node-pool", "bastion-host", "payment-api-worker"],
+        "direct_dependencies": [
+          "payments-vpc",
+          "kubernetes-node-pool",
+          "bastion-host",
+          "payment-api-worker"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -34,17 +39,40 @@
         "Affects inbound traffic routing for 8 production backend nodes",
         "Public exposure to active automated botnet scanning"
       ],
-      "rationale": "Direct public SSH ingress on production VPC exposes critical backend infrastructure to brute force and protocol exploits. Requires immediate gating and remediation."
+      "rationale": "Direct public SSH ingress on production VPC exposes critical backend infrastructure to brute force and protocol exploits. Requires immediate gating and remediation.",
+      "execution_risk_level": "CRITICAL"
     },
     "current_state": {
-      "source_ranges": ["0.0.0.0/0"],
-      "allowed": [{ "IPProtocol": "tcp", "ports": ["22"] }],
-      "target_tags": ["production-backend"]
+      "source_ranges": [
+        "0.0.0.0/0"
+      ],
+      "allowed": [
+        {
+          "IPProtocol": "tcp",
+          "ports": [
+            "22"
+          ]
+        }
+      ],
+      "target_tags": [
+        "production-backend"
+      ]
     },
     "proposed_state": {
-      "source_ranges": ["35.235.240.0/20"],
-      "allowed": [{ "IPProtocol": "tcp", "ports": ["22"] }],
-      "target_tags": ["production-backend"],
+      "source_ranges": [
+        "35.235.240.0/20"
+      ],
+      "allowed": [
+        {
+          "IPProtocol": "tcp",
+          "ports": [
+            "22"
+          ]
+        }
+      ],
+      "target_tags": [
+        "production-backend"
+      ],
       "description": "Restricted SSH ingress via Google Cloud Identity-Aware Proxy (IAP)"
     },
     "technical_diff": {
@@ -58,24 +86,69 @@
       "tool_name": "gcp_firewall_restrict_ssh_ingress",
       "tool_parameters": {
         "firewall_rule_name": "allow-ssh-ingress",
-        "allowed_cidrs": ["35.235.240.0/20"]
+        "allowed_cidrs": [
+          "35.235.240.0/20"
+        ]
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Cloud-Security-Lead", "Network-Admin", "Platform-Owner"],
+      "approver_roles": [
+        "Cloud-Security-Lead",
+        "Network-Admin",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "rule_name": "allow-ssh-ingress",
-          "source_ranges": ["0.0.0.0/0"]
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Fetch cached firewall snapshot from metadata store",
-          "Re-apply original source ranges using compute.firewalls.update API"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 15
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud compute firewall-rules describe allow-ssh-ingress --format='value(sourceRanges)'"
-    }
+      "validation_probe": "gcloud compute firewall-rules describe allow-ssh-ingress --format='value(sourceRanges)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "source_ranges": [
+          "0.0.0.0/0"
+        ],
+        "allowed": [
+          {
+            "IPProtocol": "tcp",
+            "ports": [
+              "22"
+            ]
+          }
+        ],
+        "target_tags": [
+          "production-backend"
+        ]
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod-vpc/global/firewalls/allow-ssh-ingress"
   },
   {
     "rank": 2,
@@ -100,7 +173,12 @@
       "risk_level": "CRITICAL",
       "blast_radius": {
         "affected_services_count": 14,
-        "direct_dependencies": ["payments-api", "transaction-engine", "ledger-sync", "ingress-gateway"],
+        "direct_dependencies": [
+          "payments-api",
+          "transaction-engine",
+          "ledger-sync",
+          "ingress-gateway"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -112,14 +190,19 @@
         "Affects control plane of primary production transaction cluster",
         "Kubernetes API server reachable by arbitrary internet addresses"
       ],
-      "rationale": "An exposed Kubernetes API server allows unauthorized probes and credential stuffing against cluster RBAC. Restricting authorized networks isolates the master control plane."
+      "rationale": "An exposed Kubernetes API server allows unauthorized probes and credential stuffing against cluster RBAC. Restricting authorized networks isolates the master control plane.",
+      "execution_risk_level": "CRITICAL"
     },
     "current_state": {
-      "master_authorized_networks": ["0.0.0.0/0"],
+      "master_authorized_networks": [
+        "0.0.0.0/0"
+      ],
       "private_endpoint_enforced": false
     },
     "proposed_state": {
-      "master_authorized_networks": ["10.128.0.0/24"],
+      "master_authorized_networks": [
+        "10.128.0.0/24"
+      ],
       "private_endpoint_enforced": true
     },
     "technical_diff": {
@@ -133,24 +216,59 @@
       "tool_name": "gcp_gke_disable_public_endpoint",
       "tool_parameters": {
         "cluster_name": "payments-gke-prod",
-        "authorized_cidrs": ["10.128.0.0/24"]
+        "authorized_cidrs": [
+          "10.128.0.0/24"
+        ]
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["SRE-Principal", "Platform-Owner", "Kubernetes-Lead"],
+      "approver_roles": [
+        "SRE-Principal",
+        "Platform-Owner",
+        "Kubernetes-Lead"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "cluster_name": "payments-gke-prod",
-          "master_authorized_networks": ["0.0.0.0/0"]
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Query cluster master authorized networks snapshot",
-          "Revert via container.clusters.update API if management connectivity is broken"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 30
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(masterAuthorizedNetworksConfig.cidrBlocks)'"
-    }
+      "validation_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(masterAuthorizedNetworksConfig.cidrBlocks)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "master_authorized_networks": [
+          "0.0.0.0/0"
+        ],
+        "private_endpoint_enforced": false
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/zones/us-central1-a/clusters/payments-gke-prod"
   },
   {
     "rank": 3,
@@ -175,7 +293,11 @@
       "risk_level": "CRITICAL",
       "blast_radius": {
         "affected_services_count": 6,
-        "direct_dependencies": ["customer-service", "billing-service", "checkout-api"],
+        "direct_dependencies": [
+          "customer-service",
+          "billing-service",
+          "checkout-api"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 1,
         "data_loss_risk": false
@@ -187,11 +309,17 @@
         "Direct exposure of PCI customer cardholder relational database",
         "Permits ingress on PostgreSQL TCP port 5432 from all internet hosts"
       ],
-      "rationale": "Public IP on core production relational database violates PCI-DSS 1.3 and CIS GCP 6.2. Enforcing Private Service Access (PSA) isolates DB within private VPC."
+      "rationale": "Public IP on core production relational database violates PCI-DSS 1.3 and CIS GCP 6.2. Enforcing Private Service Access (PSA) isolates DB within private VPC.",
+      "execution_risk_level": "CRITICAL"
     },
     "current_state": {
       "ipv4_enabled": true,
-      "authorized_networks": [{ "value": "0.0.0.0/0", "name": "any" }],
+      "authorized_networks": [
+        {
+          "value": "0.0.0.0/0",
+          "name": "any"
+        }
+      ],
       "private_network": null
     },
     "proposed_state": {
@@ -213,22 +341,58 @@
         "vpc_network": "payments-vpc"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Database-Admin", "Platform-Owner", "Security-Lead"],
+      "approver_roles": [
+        "Database-Admin",
+        "Platform-Owner",
+        "Security-Lead"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "instance_name": "customer-db-pg-prod",
-          "ipv4_enabled": true,
-          "authorized_networks": [{ "value": "0.0.0.0/0", "name": "any" }]
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Check connectivity on private IP range",
-          "If client disconnect threshold exceeded, rollback IP configuration via sql.instances.patch"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 30
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud sql instances describe customer-db-pg-prod --format='value(settings.ipConfiguration.ipv4Enabled)'"
-    }
+      "validation_probe": "gcloud sql instances describe customer-db-pg-prod --format='value(settings.ipConfiguration.ipv4Enabled)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "ipv4_enabled": true,
+        "authorized_networks": [
+          {
+            "value": "0.0.0.0/0",
+            "name": "any"
+          }
+        ],
+        "private_network": null
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/instances/customer-db-pg-prod"
   },
   {
     "rank": 4,
@@ -253,7 +417,11 @@
       "risk_level": "CRITICAL",
       "blast_radius": {
         "affected_services_count": 3,
-        "direct_dependencies": ["churn-predictor-model", "bi-dashboards", "marketing-sync"],
+        "direct_dependencies": [
+          "churn-predictor-model",
+          "bi-dashboards",
+          "marketing-sync"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -265,13 +433,24 @@
         "Confidential business dataset exposed to any authenticated Google identity globally",
         "Severe regulatory non-compliance under GDPR and CCPA"
       ],
-      "rationale": "Sharing datasets with allAuthenticatedUsers allows external third-party Google accounts to query company warehouse tables without enterprise authentication."
+      "rationale": "Sharing datasets with allAuthenticatedUsers allows external third-party Google accounts to query company warehouse tables without enterprise authentication.",
+      "execution_risk_level": "CRITICAL"
     },
     "current_state": {
-      "access": [{ "role": "READER", "specialGroup": "allAuthenticatedUsers" }]
+      "access": [
+        {
+          "role": "READER",
+          "specialGroup": "allAuthenticatedUsers"
+        }
+      ]
     },
     "proposed_state": {
-      "access": [{ "role": "READER", "groupByEmail": "data-analysts@enterprise.internal" }]
+      "access": [
+        {
+          "role": "READER",
+          "groupByEmail": "data-analysts@enterprise.internal"
+        }
+      ]
     },
     "technical_diff": {
       "deletions": "- access: [{\"role\": \"READER\", \"specialGroup\": \"allAuthenticatedUsers\"}]",
@@ -286,20 +465,55 @@
         "dataset_name": "customer_churn"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Data-Governance-Officer", "Platform-Owner"],
+      "approver_roles": [
+        "Data-Governance-Officer",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "dataset": "customer_churn",
-          "previous_access": [{ "role": "READER", "specialGroup": "allAuthenticatedUsers" }]
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Revert dataset ACL using bigquery.datasets.patch API"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 10
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "bq show --format=prettyjson analytics-prod:customer_churn | grep -i allAuthenticatedUsers"
-    }
+      "validation_probe": "bq show --format=prettyjson analytics-prod:customer_churn | grep -i allAuthenticatedUsers",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "access": [
+          {
+            "role": "READER",
+            "specialGroup": "allAuthenticatedUsers"
+          }
+        ]
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/analytics-prod/datasets/customer_churn"
   },
   {
     "rank": 5,
@@ -324,7 +538,11 @@
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 5,
-        "direct_dependencies": ["dataproc-etl", "bigquery-batch-runner", "cloud-storage-transfer"],
+        "direct_dependencies": [
+          "dataproc-etl",
+          "bigquery-batch-runner",
+          "cloud-storage-transfer"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -336,13 +554,20 @@
         "Service account holds primitive Owner rights across production project",
         "High blast radius: potential to delete or modify any project asset"
       ],
-      "rationale": "Primitive roles violate least privilege. If the service account credentials are compromised, an attacker gains root-level administrative access to the entire production analytics project."
+      "rationale": "Primitive roles violate least privilege. If the service account credentials are compromised, an attacker gains root-level administrative access to the entire production analytics project.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
-      "roles": ["roles/owner"]
+      "roles": [
+        "roles/owner"
+      ]
     },
     "proposed_state": {
-      "roles": ["roles/bigquery.jobUser", "roles/storage.objectViewer", "roles/bigquery.dataEditor"]
+      "roles": [
+        "roles/bigquery.jobUser",
+        "roles/storage.objectViewer",
+        "roles/bigquery.dataEditor"
+      ]
     },
     "technical_diff": {
       "deletions": "- roles: [\"roles/owner\"]",
@@ -355,24 +580,62 @@
       "tool_name": "gcp_iam_enforce_least_privilege",
       "tool_parameters": {
         "service_account": "etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
-        "removed_roles": ["roles/owner"],
-        "added_roles": ["roles/bigquery.jobUser", "roles/storage.objectViewer", "roles/bigquery.dataEditor"]
+        "removed_roles": [
+          "roles/owner"
+        ],
+        "added_roles": [
+          "roles/bigquery.jobUser",
+          "roles/storage.objectViewer",
+          "roles/bigquery.dataEditor"
+        ]
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["IAM-Administrator", "Platform-Owner"],
+      "approver_roles": [
+        "IAM-Administrator",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "service_account": "etl-batch-sa@analytics-prod.iam.gserviceaccount.com",
-          "roles": ["roles/owner"]
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Re-grant roles/owner binding via gcloud projects add-iam-policy-binding if jobs fail"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 15
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud projects get-iam-policy analytics-prod --flatten='bindings[].members' --filter='bindings.members:etl-batch-sa' --format='table(bindings.role)'"
-    }
+      "validation_probe": "gcloud projects get-iam-policy analytics-prod --flatten='bindings[].members' --filter='bindings.members:etl-batch-sa' --format='table(bindings.role)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "roles": [
+          "roles/owner"
+        ]
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com"
   },
   {
     "rank": 6,
@@ -397,7 +660,11 @@
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 4,
-        "direct_dependencies": ["checkout-frontend", "api-gateway-prod", "stripe-connector"],
+        "direct_dependencies": [
+          "checkout-frontend",
+          "api-gateway-prod",
+          "stripe-connector"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -409,13 +676,20 @@
         "Payment microservice callable by anonymous web requests",
         "Bypasses API Gateway rate limiting and authentication checks"
       ],
-      "rationale": "An unauthenticated Cloud Run endpoint processing credit card payments presents an imminent fraud and abuse risk. Must enforce OIDC identity verification."
+      "rationale": "An unauthenticated Cloud Run endpoint processing credit card payments presents an imminent fraud and abuse risk. Must enforce OIDC identity verification.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
-      "invoker_binding": { "member": "allUsers", "role": "roles/run.invoker" }
+      "invoker_binding": {
+        "member": "allUsers",
+        "role": "roles/run.invoker"
+      }
     },
     "proposed_state": {
-      "invoker_binding": { "member": "serviceAccount:api-gateway-sa@payments-prod.iam.gserviceaccount.com", "role": "roles/run.invoker" }
+      "invoker_binding": {
+        "member": "serviceAccount:api-gateway-sa@payments-prod.iam.gserviceaccount.com",
+        "role": "roles/run.invoker"
+      }
     },
     "technical_diff": {
       "deletions": "- member: \"allUsers\", role: \"roles/run.invoker\"",
@@ -430,20 +704,53 @@
         "service_name": "payment-processor-service"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Platform-Owner", "Application-Security-Lead"],
+      "approver_roles": [
+        "Platform-Owner",
+        "Application-Security-Lead"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "service": "payment-processor-service",
-          "member": "allUsers"
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Re-add allUsers to roles/run.invoker binding if upstream token signing fails"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 10
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud run services get-iam-policy payment-processor-service --region=us-central1 --format='value(bindings.members)'"
-    }
+      "validation_probe": "gcloud run services get-iam-policy payment-processor-service --region=us-central1 --format='value(bindings.members)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "invoker_binding": {
+          "member": "allUsers",
+          "role": "roles/run.invoker"
+        }
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/locations/us-central1/services/payment-processor-service"
   },
   {
     "rank": 7,
@@ -468,7 +775,10 @@
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 2,
-        "direct_dependencies": ["audit-logging-agent", "sox-compliance-collector"],
+        "direct_dependencies": [
+          "audit-logging-agent",
+          "sox-compliance-collector"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -480,7 +790,8 @@
         "Financial regulatory audit trail must satisfy SOX & PCI key management controls",
         "Bucket currently protected only by Google-managed keys"
       ],
-      "rationale": "Financial audit logs stored with default Google-managed keys do not provide cryptographic sovereignty or granular key destruction capabilities."
+      "rationale": "Financial audit logs stored with default Google-managed keys do not provide cryptographic sovereignty or granular key destruction capabilities.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
       "encryption": "Google-Managed Default Key",
@@ -504,20 +815,51 @@
         "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/audit-key"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Cloud-Security-Lead", "Platform-Owner"],
+      "approver_roles": [
+        "Cloud-Security-Lead",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "bucket": "financial-audit-logs-prod",
-          "default_kms_key": null
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Clear default_kms_key_name on bucket metadata via storage.buckets.patch"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 10
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud storage buckets describe gs://financial-audit-logs-prod --format='value(encryption.defaultKmsKeyName)'"
-    }
+      "validation_probe": "gcloud storage buckets describe gs://financial-audit-logs-prod --format='value(encryption.defaultKmsKeyName)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "encryption": "Google-Managed Default Key",
+        "default_kms_key_name": null
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/buckets/financial-audit-logs-prod"
   },
   {
     "rank": 8,
@@ -542,7 +884,9 @@
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 18,
-        "direct_dependencies": ["all-production-microservices"],
+        "direct_dependencies": [
+          "all-production-microservices"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -553,15 +897,25 @@
         "Overlapping multi-issue finding on single high-criticality cluster asset",
         "Master endpoint exposed plus flat, unsegmented pod network topology"
       ],
-      "rationale": "Combined attack surface: external attackers can probe control plane, and internal pod breaches can move laterally without Calico network policies."
+      "rationale": "Combined attack surface: external attackers can probe control plane, and internal pod breaches can move laterally without Calico network policies.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
-      "master_authorized_networks": ["0.0.0.0/0"],
-      "network_policy": { "enabled": false }
+      "master_authorized_networks": [
+        "0.0.0.0/0"
+      ],
+      "network_policy": {
+        "enabled": false
+      }
     },
     "proposed_state": {
-      "master_authorized_networks": ["10.128.0.0/24"],
-      "network_policy": { "enabled": true, "provider": "CALICO" }
+      "master_authorized_networks": [
+        "10.128.0.0/24"
+      ],
+      "network_policy": {
+        "enabled": true,
+        "provider": "CALICO"
+      }
     },
     "technical_diff": {
       "deletions": "- master_authorized_networks: [\"0.0.0.0/0\"]\n- network_policy: { enabled: false }",
@@ -574,23 +928,61 @@
       "tool_name": "gcp_gke_disable_public_endpoint",
       "tool_parameters": {
         "cluster_name": "payments-gke-prod",
-        "authorized_cidrs": ["10.128.0.0/24"],
+        "authorized_cidrs": [
+          "10.128.0.0/24"
+        ],
         "enable_network_policy": true
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["SRE-Principal", "Platform-Owner"],
+      "approver_roles": [
+        "SRE-Principal",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "cluster": "payments-gke-prod"
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Revert cluster configuration snapshot via container API"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 45
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(networkPolicy.enabled)'"
-    }
+      "validation_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(networkPolicy.enabled)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "master_authorized_networks": [
+          "0.0.0.0/0"
+        ],
+        "network_policy": {
+          "enabled": false
+        }
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/zones/us-central1-a/clusters/payments-gke-prod"
   },
   {
     "rank": 9,
@@ -615,7 +1007,11 @@
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 5,
-        "direct_dependencies": ["customer-db-pg-prod", "financial-audit-logs-prod", "stripe-token-vault"],
+        "direct_dependencies": [
+          "customer-db-pg-prod",
+          "financial-audit-logs-prod",
+          "stripe-token-vault"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -626,7 +1022,8 @@
         "Violation Category: KMS_KEY_ROTATION_DISABLED (criticality: 60)",
         "Key encrypts primary production payment credentials and database records"
       ],
-      "rationale": "Keys used indefinitely accumulate massive volumes of ciphertext under a single key version, magnifying exposure in case of cryptanalytic compromise."
+      "rationale": "Keys used indefinitely accumulate massive volumes of ciphertext under a single key version, magnifying exposure in case of cryptanalytic compromise.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
       "rotation_period": null,
@@ -651,27 +1048,58 @@
         "rotation_days": 90
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Security-Lead", "Platform-Owner"],
+      "approver_roles": [
+        "Security-Lead",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "key": "payment-kek",
-          "rotation_period": null
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Clear rotation schedule via kms.cryptoKeys.patch API"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 10
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud kms keys describe payment-kek --keyring=kms-prod --location=us-central1 --format='value(rotationPeriod)'"
-    }
+      "validation_probe": "gcloud kms keys describe payment-kek --keyring=kms-prod --location=us-central1 --format='value(rotationPeriod)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "rotation_period": null,
+        "next_rotation_time": null
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/payment-kek"
   },
   {
     "rank": 10,
     "scenario_key": "sql-multi-issue",
     "finding_id": "SCC-SQL-MULTI-4401",
     "source": "Google Cloud Security Command Center (SCC)",
-    "category": "DATABASE_PUBLIC_IP",
+    "category": "DATABASE_BACKUP_DISABLED",
     "service": "Cloud SQL (MySQL)",
     "resource_name": "orders-mysql-prod",
     "resource_id": "projects/orders-prod/instances/orders-mysql-prod",
@@ -680,62 +1108,105 @@
     "environment": "production",
     "region": "us-central1",
     "severity": "HIGH",
-    "compliance_standard": "CIS GCP Benchmark v2.0 - 6.4 & 6.7",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 6.7",
     "policy_id": "POL-CIS-GCP-6.7",
-    "description": "Production MySQL instance permits unencrypted SSL connections and has automated backups disabled.",
-    "prompt": "Remediate finding group on Cloud SQL instance orders-mysql-prod (SSL and Backup disabled).",
+    "description": "Production MySQL instance has automated backups disabled. SSL enforcement is tracked as a separate finding.",
+    "prompt": "Remediate finding #SCC-SQL-MULTI-4401: enable and verify automated backups for orders-mysql-prod.",
     "risk_assessment": {
       "score": 78,
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 4,
-        "direct_dependencies": ["order-fulfillment", "inventory-sync", "shipping-gateway"],
+        "direct_dependencies": [
+          "order-fulfillment",
+          "inventory-sync",
+          "shipping-gateway"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 1,
         "data_loss_risk": false
       },
       "reversibility": "FULL",
       "factors": [
-        "Target Environment: PRODUCTION (weight: 85)",
-        "Overlapping multi-finding: unencrypted traffic in-transit & lack of DR backups"
+        "Target Environment: PRODUCTION",
+        "Violation Category: DATABASE_BACKUP_DISABLED",
+        "Automated backups are disabled; restore capability must be confirmed."
       ],
-      "rationale": "Allows man-in-the-middle sniffing of order data in-transit, and risks irrecoverable data loss without daily snapshots."
+      "rationale": "Disabled automated backups increase recovery time and data-loss exposure. Enable backups only after confirming retention, recovery objectives, and maintenance constraints.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
-      "ssl_mode": "ALLOW_UNENCRYPTED_AND_ENCRYPTED",
-      "backup_configuration": { "enabled": false }
+      "backup_configuration": {
+        "enabled": false
+      }
     },
     "proposed_state": {
-      "ssl_mode": "ENCRYPTED_ONLY",
-      "backup_configuration": { "enabled": true, "start_time": "02:00" }
+      "backup_configuration": {
+        "enabled": true,
+        "start_time": "02:00"
+      }
     },
     "technical_diff": {
-      "deletions": "- ssl_mode: ALLOW_UNENCRYPTED_AND_ENCRYPTED\n- backup_configuration.enabled: false",
-      "additions": "+ ssl_mode: ENCRYPTED_ONLY\n+ backup_configuration: { enabled: true, start_time: \"02:00\" }",
-      "summary": "Mandates TLS encryption on DB port 3306 and enables nightly automated snapshots."
+      "deletions": "- backup_configuration.enabled: false",
+      "additions": "+ backup_configuration: { enabled: true, start_time: \"02:00\" }",
+      "summary": "Enable scheduled automated backups; verify retention, recovery point objective, and restore readiness."
     },
     "remediation": {
-      "action_title": "Enforce SSL-Only Connections & Enable Automated Daily Backups on Cloud SQL",
-      "rationale": "Satisfies CIS GCP 6.4 and 6.7 simultaneously, securing data in-transit and disaster recovery readiness.",
+      "action_title": "Enable Automated Backups for Cloud SQL",
+      "rationale": "Restore capability is required for operational resilience.",
       "tool_name": "gcp_sql_enable_automated_backups",
       "tool_parameters": {
         "instance_name": "orders-mysql-prod",
-        "enforce_ssl": true
+        "backup_enabled": true,
+        "start_time": "02:00"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Database-Admin", "Platform-Owner"],
+      "approver_roles": [
+        "Database-Admin",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "instance_name": "orders-mysql-prod"
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Revert SSL mode via sql.instances.patch"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 30
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud sql instances describe orders-mysql-prod --format='value(settings.ipConfiguration.sslMode)'"
-    }
+      "validation_probe": "gcloud sql instances describe orders-mysql-prod --format=\"value(settings.backupConfiguration.enabled)\"",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "backup_configuration": {
+          "enabled": false
+        }
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/orders-prod/instances/orders-mysql-prod"
   },
   {
     "rank": 11,
@@ -760,7 +1231,9 @@
       "risk_level": "HIGH",
       "blast_radius": {
         "affected_services_count": 2,
-        "direct_dependencies": ["payment-processor-service"],
+        "direct_dependencies": [
+          "payment-processor-service"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -771,13 +1244,16 @@
         "Violation Category: SECRET_UNENCRYPTED (criticality: 65)",
         "Contains live payment gateway credentials"
       ],
-      "rationale": "High-value production payment keys stored without customer-managed cryptographic keys fail compliance mandates for key isolation."
+      "rationale": "High-value production payment keys stored without customer-managed cryptographic keys fail compliance mandates for key isolation.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
       "customer_managed_encryption": null
     },
     "proposed_state": {
-      "customer_managed_encryption": { "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/secrets-kek" }
+      "customer_managed_encryption": {
+        "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/secrets-kek"
+      }
     },
     "technical_diff": {
       "deletions": "- customer_managed_encryption: null",
@@ -793,15 +1269,50 @@
         "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/secrets-kek"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Security-Lead", "Platform-Owner"],
+      "approver_roles": [
+        "Security-Lead",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "secret_id": "stripe-live-api-key" },
-        "steps": ["Revert secret encryption configuration"],
-        "estimated_recovery_time_seconds": 15
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud secrets describe stripe-live-api-key --format='value(customerManagedEncryption.kmsKeyName)'"
-    }
+      "validation_probe": "gcloud secrets describe stripe-live-api-key --format='value(customerManagedEncryption.kmsKeyName)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "customer_managed_encryption": null
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/secrets/stripe-live-api-key"
   },
   {
     "rank": 12,
@@ -826,7 +1337,11 @@
       "risk_level": "MEDIUM",
       "blast_radius": {
         "affected_services_count": 6,
-        "direct_dependencies": ["order-worker", "inventory-tracker", "notification-dispatcher"],
+        "direct_dependencies": [
+          "order-worker",
+          "inventory-tracker",
+          "notification-dispatcher"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -837,13 +1352,16 @@
         "Violation Category: GKE_WORKLOAD_IDENTITY_DISABLED (criticality: 45)",
         "Pods mounting static credential files in filesystem secrets"
       ],
-      "rationale": "Static keys mounted inside pods can be exfiltrated. Workload Identity provides automatic token rotation and removes persistent credentials."
+      "rationale": "Static keys mounted inside pods can be exfiltrated. Workload Identity provides automatic token rotation and removes persistent credentials.",
+      "execution_risk_level": "MEDIUM"
     },
     "current_state": {
       "workload_identity_config": null
     },
     "proposed_state": {
-      "workload_identity_config": { "workload_pool": "orders-prod.svc.id.goog" }
+      "workload_identity_config": {
+        "workload_pool": "orders-prod.svc.id.goog"
+      }
     },
     "technical_diff": {
       "deletions": "- workload_identity_config: null",
@@ -859,15 +1377,50 @@
         "workload_pool": "orders-prod.svc.id.goog"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Platform-Owner", "Kubernetes-Lead"],
+      "approver_roles": [
+        "Platform-Owner",
+        "Kubernetes-Lead"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "cluster_name": "order-processing-cluster" },
-        "steps": ["Revert workload identity configuration via container API"],
-        "estimated_recovery_time_seconds": 45
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud container clusters describe order-processing-cluster --format='value(workloadIdentityConfig.workloadPool)'"
-    }
+      "validation_probe": "gcloud container clusters describe order-processing-cluster --format='value(workloadIdentityConfig.workloadPool)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "workload_identity_config": null
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/orders-prod/clusters/order-processing-cluster"
   },
   {
     "rank": 13,
@@ -892,7 +1445,9 @@
       "risk_level": "MEDIUM",
       "blast_radius": {
         "affected_services_count": 2,
-        "direct_dependencies": ["staging-db-worker"],
+        "direct_dependencies": [
+          "staging-db-worker"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -903,10 +1458,16 @@
         "Violation Category: VM_EXTERNAL_IP (criticality: 55)",
         "Direct public IP attached to internal worker VM"
       ],
-      "rationale": "Internal database worker should not be directly routable from the public internet. Outbound traffic must route via Cloud NAT."
+      "rationale": "Internal database worker should not be directly routable from the public internet. Outbound traffic must route via Cloud NAT.",
+      "execution_risk_level": "MEDIUM"
     },
     "current_state": {
-      "access_configs": [{ "type": "ONE_TO_ONE_NAT", "nat_ip": "35.202.14.89" }],
+      "access_configs": [
+        {
+          "type": "ONE_TO_ONE_NAT",
+          "nat_ip": "35.202.14.89"
+        }
+      ],
       "internal_ip": "10.128.4.12"
     },
     "proposed_state": {
@@ -925,16 +1486,56 @@
       "tool_parameters": {
         "instance_name": "db-worker-vm-01"
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": ["Platform-Engineer"],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "Platform-Engineer"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "instance_name": "db-worker-vm-01", "nat_ip": "35.202.14.89" },
-        "steps": ["Re-attach external IP if needed"],
-        "estimated_recovery_time_seconds": 15
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud compute instances describe db-worker-vm-01 --zone=us-central1-a --format='value(networkInterfaces[0].accessConfigs)'"
-    }
+      "validation_probe": "gcloud compute instances describe db-worker-vm-01 --zone=us-central1-a --format='value(networkInterfaces[0].accessConfigs)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "access_configs": [
+          {
+            "type": "ONE_TO_ONE_NAT",
+            "nat_ip": "35.202.14.89"
+          }
+        ],
+        "internal_ip": "10.128.4.12"
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/core-staging/zones/us-central1-a/instances/db-worker-vm-01"
   },
   {
     "rank": 14,
@@ -959,7 +1560,10 @@
       "risk_level": "MEDIUM",
       "blast_radius": {
         "affected_services_count": 3,
-        "direct_dependencies": ["payment-subscriber-service", "analytics-ingestion"],
+        "direct_dependencies": [
+          "payment-subscriber-service",
+          "analytics-ingestion"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -970,7 +1574,8 @@
         "Violation Category: PUBSUB_MISSING_CMEK (criticality: 45)",
         "Buffers payment transaction event messages"
       ],
-      "rationale": "High-volume transactional event streams must be protected under customer cryptographic key control."
+      "rationale": "High-volume transactional event streams must be protected under customer cryptographic key control.",
+      "execution_risk_level": "MEDIUM"
     },
     "current_state": {
       "kms_key_name": null
@@ -992,15 +1597,50 @@
         "kms_key_name": "projects/payments-prod/locations/us-central1/keyRings/kms-prod/cryptoKeys/pubsub-kek"
       },
       "governance_decision": "REQUIRE_HUMAN_APPROVAL",
-      "approver_roles": ["Platform-Owner", "Security-Lead"],
+      "approver_roles": [
+        "Platform-Owner",
+        "Security-Lead"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "topic_name": "payment-events-topic-prod" },
-        "steps": ["Revert topic encryption settings"],
-        "estimated_recovery_time_seconds": 10
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud pubsub topics describe payment-events-topic-prod --format='value(kmsKeyName)'"
-    }
+      "validation_probe": "gcloud pubsub topics describe payment-events-topic-prod --format='value(kmsKeyName)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "kms_key_name": null
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/payments-prod/topics/payment-events-topic-prod"
   },
   {
     "rank": 15,
@@ -1025,7 +1665,9 @@
       "risk_level": "MEDIUM",
       "blast_radius": {
         "affected_services_count": 1,
-        "direct_dependencies": ["dev-invoice-microservice"],
+        "direct_dependencies": [
+          "dev-invoice-microservice"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -1037,18 +1679,34 @@
         "Public anonymous read access enabled via allUsers",
         "Non-production tier enables safe autonomous self-healing"
       ],
-      "rationale": "Although located in development, public access violates organizational security policy POL-CIS-GCP-5.1. Autonomous remediation is permitted."
+      "rationale": "Although located in development, public access violates organizational security policy POL-CIS-GCP-5.1. Autonomous remediation is permitted.",
+      "execution_risk_level": "MEDIUM"
     },
     "current_state": {
       "iam_bindings": [
-        { "role": "roles/storage.objectViewer", "members": ["allUsers"] },
-        { "role": "roles/storage.admin", "members": ["serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"] }
+        {
+          "role": "roles/storage.objectViewer",
+          "members": [
+            "allUsers"
+          ]
+        },
+        {
+          "role": "roles/storage.admin",
+          "members": [
+            "serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"
+          ]
+        }
       ],
       "public_access_prevention": "unspecified"
     },
     "proposed_state": {
       "iam_bindings": [
-        { "role": "roles/storage.admin", "members": ["serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"] }
+        {
+          "role": "roles/storage.admin",
+          "members": [
+            "serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"
+          ]
+        }
       ],
       "public_access_prevention": "enforced"
     },
@@ -1064,24 +1722,72 @@
       "tool_parameters": {
         "bucket_name": "retail-app-invoices-dev",
         "current_iam_bindings": [
-          { "role": "roles/storage.objectViewer", "members": ["allUsers"] }
+          {
+            "role": "roles/storage.objectViewer",
+            "members": [
+              "allUsers"
+            ]
+          }
         ]
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": ["DevOps-Engineer"],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "DevOps-Engineer"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {
-          "bucket": "retail-app-invoices-dev",
-          "bindings": [{ "role": "roles/storage.objectViewer", "members": ["allUsers"] }]
-        },
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
         "steps": [
-          "Re-add public binding if external dev webhook fails"
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
         ],
-        "estimated_recovery_time_seconds": 10
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(iamConfiguration.publicAccessPrevention)'"
-    }
+      "validation_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(iamConfiguration.publicAccessPrevention)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "iam_bindings": [
+          {
+            "role": "roles/storage.objectViewer",
+            "members": [
+              "allUsers"
+            ]
+          },
+          {
+            "role": "roles/storage.admin",
+            "members": [
+              "serviceAccount:dev-sa@retail-dev-env.iam.gserviceaccount.com"
+            ]
+          }
+        ],
+        "public_access_prevention": "unspecified"
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/retail-dev-env/buckets/retail-app-invoices-dev"
   },
   {
     "rank": 16,
@@ -1106,7 +1812,9 @@
       "risk_level": "LOW",
       "blast_radius": {
         "affected_services_count": 1,
-        "direct_dependencies": ["dev-invoices"],
+        "direct_dependencies": [
+          "dev-invoices"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -1117,7 +1825,8 @@
         "Atomic multi-finding resolution in development sandbox",
         "Self-healing pre-authorized by Policy Engine"
       ],
-      "rationale": "Resolving public access and lifecycle transition atomically in dev sandbox. 100% automated self-healing without human blocker."
+      "rationale": "Resolving public access and lifecycle transition atomically in dev sandbox. 100% automated self-healing without human blocker.",
+      "execution_risk_level": "LOW"
     },
     "current_state": {
       "public_access_prevention": "unspecified",
@@ -1125,7 +1834,14 @@
     },
     "proposed_state": {
       "public_access_prevention": "enforced",
-      "lifecycle_rules": [{ "action": "SetStorageClass: COLDLINE", "condition": { "age": 365 } }]
+      "lifecycle_rules": [
+        {
+          "action": "SetStorageClass: COLDLINE",
+          "condition": {
+            "age": 365
+          }
+        }
+      ]
     },
     "technical_diff": {
       "deletions": "- iam_binding: roles/storage.objectViewer -> [\"allUsers\"]\n- lifecycle_rules: []",
@@ -1140,16 +1856,51 @@
         "bucket_name": "retail-app-invoices-dev",
         "add_lifecycle": true
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": ["DevOps-Engineer"],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "DevOps-Engineer"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "bucket": "retail-app-invoices-dev" },
-        "steps": ["Restore original bucket configuration"],
-        "estimated_recovery_time_seconds": 10
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(lifecycle.rule[0].action.type)'"
-    }
+      "validation_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(lifecycle.rule[0].action.type)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "public_access_prevention": "unspecified",
+        "lifecycle_rules": []
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/retail-dev-env/buckets/retail-app-invoices-dev"
   },
   {
     "rank": 17,
@@ -1174,7 +1925,9 @@
       "risk_level": "LOW",
       "blast_radius": {
         "affected_services_count": 1,
-        "direct_dependencies": ["analytics-sandbox"],
+        "direct_dependencies": [
+          "analytics-sandbox"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -1185,13 +1938,19 @@
         "Violation Category: DATABASE_BACKUP_DISABLED (criticality: 30)",
         "Zero downtime risk to enable background backup schedule"
       ],
-      "rationale": "Automated backups in dev environment ensure developer data loss prevention without requiring engineering overhead."
+      "rationale": "Automated backups in dev environment ensure developer data loss prevention without requiring engineering overhead.",
+      "execution_risk_level": "LOW"
     },
     "current_state": {
-      "backup_configuration": { "enabled": false }
+      "backup_configuration": {
+        "enabled": false
+      }
     },
     "proposed_state": {
-      "backup_configuration": { "enabled": true, "start_time": "03:00" }
+      "backup_configuration": {
+        "enabled": true,
+        "start_time": "03:00"
+      }
     },
     "technical_diff": {
       "deletions": "- backup_configuration.enabled: false",
@@ -1205,16 +1964,52 @@
       "tool_parameters": {
         "instance_name": "analytics-mysql-dev"
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": ["DevOps-Engineer"],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "DevOps-Engineer"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "instance_name": "analytics-mysql-dev", "backups": false },
-        "steps": ["Disable automated backups if storage quota exceeded"],
-        "estimated_recovery_time_seconds": 10
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud sql instances describe analytics-mysql-dev --format='value(settings.backupConfiguration.enabled)'"
-    }
+      "validation_probe": "gcloud sql instances describe analytics-mysql-dev --format='value(settings.backupConfiguration.enabled)'",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "backup_configuration": {
+          "enabled": false
+        }
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/analytics-dev/instances/analytics-mysql-dev"
   },
   {
     "rank": 18,
@@ -1239,7 +2034,9 @@
       "risk_level": "LOW",
       "blast_radius": {
         "affected_services_count": 1,
-        "direct_dependencies": ["ci-pipeline-runner"],
+        "direct_dependencies": [
+          "ci-pipeline-runner"
+        ],
         "has_internet_facing_impact": false,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -1250,7 +2047,8 @@
         "Violation Category: IAM_KEY_UNROTATED (criticality: 20)",
         "Stale credential can be rotated smoothly via Secret Manager sync"
       ],
-      "rationale": "Key age of 142 days exceeds the 90-day threshold. Autonomous key rotation creates replacement and deprecates stale key."
+      "rationale": "Key age of 142 days exceeds the 90-day threshold. Autonomous key rotation creates replacement and deprecates stale key.",
+      "execution_risk_level": "LOW"
     },
     "current_state": {
       "key_age_days": 142,
@@ -1273,23 +2071,58 @@
         "service_account": "ci-deployer@dev-core.iam.gserviceaccount.com",
         "old_key_id": "ci-deployer-sa-key-9281"
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": ["DevOps-Engineer"],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "DevOps-Engineer"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "old_key_id": "ci-deployer-sa-key-9281" },
-        "steps": ["Re-enable previous key if CI/CD runner fails"],
-        "estimated_recovery_time_seconds": 10
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud iam service-accounts keys list --iam-account=ci-deployer@dev-core.iam.gserviceaccount.com"
-    }
+      "validation_probe": "gcloud iam service-accounts keys list --iam-account=ci-deployer@dev-core.iam.gserviceaccount.com",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "key_age_days": 142,
+        "status": "EXPIRED"
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "serviceAccount:ci-deployer@dev-core.iam/keys/ci-deployer-sa-key-9281"
   },
   {
     "rank": 19,
     "scenario_key": "func-runtime-dev",
     "finding_id": "SCC-FUNC-11029",
     "source": "Google Cloud Security Command Center (SCC)",
-    "category": "UNENCRYPTED_RESOURCE",
+    "category": "FUNCTION_PUBLIC_INGRESS",
     "service": "Cloud Functions",
     "resource_name": "nightly-cleanup-function-dev",
     "resource_id": "projects/retail-dev-env/locations/us-central1/functions/nightly-cleanup-function-dev",
@@ -1298,16 +2131,18 @@
     "environment": "development",
     "region": "us-central1",
     "severity": "LOW",
-    "compliance_standard": "Google Cloud Security Baseline",
-    "policy_id": "POL-SERVERLESS-0.1",
-    "description": "Cloud Function has public ingress setting enabled and utilizes deprecated runtime python38.",
-    "prompt": "Update ingress settings to internal-only and upgrade runtime on nightly-cleanup-function-dev.",
+    "compliance_standard": "Google Cloud Security Baseline - Functions 0.1",
+    "policy_id": "POL-FUNCTIONS-0.1",
+    "description": "Cloud Function permits public ingress. Deprecated runtime is a separate lifecycle issue and should be tracked independently.",
+    "prompt": "Review ingress for finding #SCC-FUNC-11029 and restrict to internal ingress only after validating callers and triggers.",
     "risk_assessment": {
       "score": 18,
       "risk_level": "LOW",
       "blast_radius": {
         "affected_services_count": 1,
-        "direct_dependencies": ["cron-scheduler"],
+        "direct_dependencies": [
+          "cron-scheduler"
+        ],
         "has_internet_facing_impact": true,
         "potential_downtime_minutes": 0,
         "data_loss_risk": false
@@ -1318,107 +2153,179 @@
         "Violation Category: Serverless Configuration Hygiene",
         "Non-critical nightly cleanup utility"
       ],
-      "rationale": "Internal utility function should not have public ingress. Upgrading to python312 and internal ingress eliminates CVE risks."
+      "rationale": "Internal utility function should not have public ingress. Upgrading to python312 and internal ingress eliminates CVE risks.",
+      "execution_risk_level": "LOW"
     },
     "current_state": {
-      "ingress_settings": "ALLOW_ALL",
-      "runtime": "python38"
+      "ingress_settings": "ALLOW_ALL"
     },
     "proposed_state": {
-      "ingress_settings": "ALLOW_INTERNAL_ONLY",
-      "runtime": "python312"
+      "ingress_settings": "ALLOW_INTERNAL_ONLY"
     },
     "technical_diff": {
-      "deletions": "- ingress_settings: ALLOW_ALL\n- runtime: python38",
-      "additions": "+ ingress_settings: ALLOW_INTERNAL_ONLY\n+ runtime: python312",
-      "summary": "Restricts ingress to internal VPC and updates runtime."
+      "deletions": "- ingress_settings: ALLOW_ALL",
+      "additions": "+ ingress_settings: ALLOW_INTERNAL_ONLY",
+      "summary": "Restrict ingress after caller and trigger compatibility checks. Runtime lifecycle is out of scope for this finding."
     },
     "remediation": {
-      "action_title": "Restrict Ingress to Internal Only & Upgrade Runtime on Cloud Function",
+      "action_title": "Restrict Cloud Function Ingress",
       "rationale": "Hardens serverless function against direct public invocation and resolves end-of-life runtime vulnerability.",
-      "tool_name": "gcp_functions_update_configuration",
+      "tool_name": "gcp_functions_restrict_ingress",
       "tool_parameters": {
         "function_name": "nightly-cleanup-function-dev",
         "ingress_settings": "ALLOW_INTERNAL_ONLY"
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": ["DevOps-Engineer"],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "Application-Owner",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": { "function_name": "nightly-cleanup-function-dev" },
-        "steps": ["Revert ingress settings via functions API"],
-        "estimated_recovery_time_seconds": 15
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gcloud functions describe nightly-cleanup-function-dev --region=us-central1 --format='value(ingressSettings)'"
-    }
+      "validation_probe": "gcloud functions describe nightly-cleanup-function-dev --region=us-central1 --format=\"value(ingressSettings)\"",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "ingress_settings": "ALLOW_ALL"
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/retail-dev-env/locations/us-central1/functions/nightly-cleanup-function-dev"
   },
   {
-    "rank": 20,
-    "scenario_key": "gcs-zero-violation",
-    "finding_id": "SCC-AUDIT-CLEAN-001",
+    "rank": null,
+    "scenario_key": "sql-ssl-enforcement",
+    "finding_id": "SCC-SQL-MULTI-4401-SSL",
     "source": "Google Cloud Security Command Center (SCC)",
-    "category": "CLEAN_COMPLIANT_RESOURCE",
-    "service": "Cloud Storage (GCS)",
-    "resource_name": "secure-backup-vault-prod",
-    "resource_id": "projects/security-prod/buckets/secure-backup-vault-prod",
-    "resource_type": "storage.googleapis.com/Bucket",
-    "project_id": "security-prod",
+    "category": "DATABASE_SSL_ENFORCEMENT",
+    "service": "Cloud SQL (MySQL)",
+    "resource_name": "orders-mysql-prod",
+    "resource_id": "projects/orders-prod/instances/orders-mysql-prod",
+    "resource_type": "sqladmin.googleapis.com/Instance",
+    "project_id": "orders-prod",
     "environment": "production",
     "region": "us-central1",
-    "severity": "LOW",
-    "compliance_standard": "CIS GCP Benchmark v2.0 - 100% Compliant",
-    "policy_id": "POL-CIS-GCP-5.1",
-    "description": "Resource matches 100% of defined organizational security baselines. Zero active violations detected.",
-    "prompt": "Verify compliance posture on secure-backup-vault-prod.",
+    "severity": "HIGH",
+    "compliance_standard": "CIS GCP Benchmark v2.0 - 6.4",
+    "policy_id": "POL-CIS-GCP-6.4",
+    "description": "Production MySQL instance permits unencrypted client connections; enforce encrypted-only connections after client compatibility validation.",
+    "prompt": "Review and remediate finding #SCC-SQL-MULTI-4401-SSL: enforce TLS-only connections on orders-mysql-prod after confirming all clients support TLS.",
     "risk_assessment": {
-      "score": 0,
-      "risk_level": "SECURE",
+      "score": 74,
+      "risk_level": "HIGH",
       "blast_radius": {
-        "affected_services_count": 0,
-        "direct_dependencies": [],
+        "affected_services_count": 4,
+        "direct_dependencies": [
+          "order-fulfillment",
+          "inventory-sync",
+          "shipping-gateway"
+        ],
         "has_internet_facing_impact": false,
-        "potential_downtime_minutes": 0,
+        "potential_downtime_minutes": 1,
         "data_loss_risk": false
       },
       "reversibility": "FULL",
       "factors": [
-        "100% of compliance benchmarks passing",
-        "Public Access Prevention enforced",
-        "Customer-Managed KMS Encryption Key active",
-        "Locked 7-year immutable object retention vault"
+        "Target Environment: PRODUCTION",
+        "Violation Category: DATABASE_SSL_ENFORCEMENT",
+        "TLS enforcement can affect legacy clients and connection pools."
       ],
-      "rationale": "Exemplary hardened resource architecture demonstrating zero drift and flawless compliance posture."
+      "rationale": "Unencrypted connections expose data in transit; enforcement requires client compatibility testing and a controlled change window.",
+      "execution_risk_level": "HIGH"
     },
     "current_state": {
-      "public_access_prevention": "enforced",
-      "encryption": "Customer-Managed Key (CMEK)",
-      "uniform_bucket_level_access": true,
-      "retention_policy_locked": true
+      "ssl_mode": "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
     },
     "proposed_state": {
-      "status": "MAINTAIN_CURRENT_HARDENED_STATE"
+      "ssl_mode": "ENCRYPTED_ONLY"
     },
     "technical_diff": {
-      "deletions": "// No non-compliant configurations detected",
-      "additions": "// Resource matches 100% of defined organizational security baselines",
-      "summary": "Compliance Score: 100% | Zero Violations Present | Status: Fully Hardened."
+      "deletions": "- ssl_mode: ALLOW_UNENCRYPTED_AND_ENCRYPTED",
+      "additions": "+ ssl_mode: ENCRYPTED_ONLY",
+      "summary": "Require encrypted connections only after client compatibility and maintenance-window checks."
     },
     "remediation": {
-      "action_title": "No Remediation Required — Resource in Certified Golden State",
-      "rationale": "Resource passes all automated controls. Continuous monitoring active.",
-      "tool_name": "gcp_storage_audit_verify",
+      "action_title": "Require TLS for Cloud SQL Connections",
+      "rationale": "Protect data in transit while preserving application availability.",
+      "tool_name": "gcp_sql_enforce_ssl_only",
       "tool_parameters": {
-        "bucket_name": "secure-backup-vault-prod"
+        "instance_name": "orders-mysql-prod",
+        "ssl_mode": "ENCRYPTED_ONLY"
       },
-      "governance_decision": "AUTO_EXECUTE",
-      "approver_roles": [],
+      "governance_decision": "REQUIRE_HUMAN_APPROVAL",
+      "approver_roles": [
+        "Database-Admin",
+        "Application-Owner",
+        "Platform-Owner"
+      ],
       "rollback_procedure": {
-        "strategy_type": "AUTOMATIC_RESTORE",
-        "snapshot_state": {},
-        "steps": ["No rollback action applicable"],
-        "estimated_recovery_time_seconds": 0
+        "strategy_type": "SAFE_STOP_AND_RESTORE_COMPLIANT_SNAPSHOT",
+        "snapshot_state_reference": "pre_change_configuration_snapshot",
+        "steps": [
+          "Never automatically restore a known-noncompliant or publicly exposed state",
+          "If health checks fail, stop further changes and preserve execution evidence",
+          "Restore only a verified last-known-good snapshot that still passes the applicable policy; otherwise escalate for human-led recovery",
+          "Any temporary exception requires time-bound break-glass approval and audit logging"
+        ],
+        "estimated_recovery_time_seconds": null
       },
-      "validation_probe": "gsutil uniformbucketlevelaccess get gs://secure-backup-vault-prod"
-    }
+      "validation_probe": "gcloud sql instances describe orders-mysql-prod --format=\"value(settings.ipConfiguration.sslMode)\"",
+      "action_version": "1.0.0",
+      "preconditions": [
+        "Resolve resource identity and obtain fresh configuration snapshot",
+        "Confirm target environment and change authorization"
+      ],
+      "postconditions": [
+        "Re-evaluate associated policy independently",
+        "Run service-health checks",
+        "Persist execution audit event"
+      ],
+      "idempotency_strategy": "Read current state; skip if already compliant; verify after applying.",
+      "execution_enabled_by_default": false,
+      "runtime_authorization_required": true
+    },
+    "first_detected_at": "2026-10-12T00:00:00Z",
+    "last_detected_at": "2026-10-12T00:00:00Z",
+    "status": "OPEN",
+    "policy_version": "1.0.0",
+    "evidence": {
+      "source": "Google Cloud Security Command Center (SCC)",
+      "observed_state": {
+        "ssl_mode": "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
+      },
+      "collected_at": "2026-10-12T00:00:00Z"
+    },
+    "confidence": 0.95,
+    "remediation_status": "NOT_STARTED",
+    "resource_uid": "projects/orders-prod/instances/orders-mysql-prod"
   }
 ]

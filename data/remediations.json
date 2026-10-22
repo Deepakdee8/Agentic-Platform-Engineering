@@ -7,11 +7,48 @@
     "standard": "CIS GCP Benchmark v2.0 - 3.6",
     "automated_tool": "gcp_firewall_restrict_ssh_ingress",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["Cloud-Security-Lead", "Network-Admin", "Platform-Owner"],
+    "approver_roles": [
+      "Cloud-Security-Lead",
+      "Network-Admin",
+      "Platform-Owner"
+    ],
     "cli_command": "gcloud compute firewall-rules update allow-ssh-ingress --source-ranges=35.235.240.0/20",
     "terraform_snippet": "resource \"google_compute_firewall\" \"allow_ssh\" {\n  name    = \"allow-ssh-ingress\"\n  network = \"payments-vpc\"\n  allow {\n    protocol = \"tcp\"\n    ports    = [\"22\"]\n  }\n  source_ranges = [\"35.235.240.0/20\"]\n  target_tags   = [\"production-backend\"]\n}",
-    "rollback_plan": "gcloud compute firewall-rules update allow-ssh-ingress --source-ranges=0.0.0.0/0",
-    "verification_probe": "gcloud compute firewall-rules describe allow-ssh-ingress --format='value(sourceRanges)'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud compute firewall-rules describe allow-ssh-ingress --format='value(sourceRanges)'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Cloud-Security-Lead",
+        "Network-Admin",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-GKE-001",
@@ -21,11 +58,48 @@
     "standard": "CIS GCP Benchmark v2.0 - 4.1",
     "automated_tool": "gcp_gke_disable_public_endpoint",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["SRE-Principal", "Platform-Owner", "Kubernetes-Lead"],
+    "approver_roles": [
+      "SRE-Principal",
+      "Platform-Owner",
+      "Kubernetes-Lead"
+    ],
     "cli_command": "gcloud container clusters update payments-gke-prod --zone=us-central1-a --enable-master-authorized-networks --master-authorized-networks=10.128.0.0/24",
     "terraform_snippet": "resource \"google_container_cluster\" \"primary\" {\n  name = \"payments-gke-prod\"\n  master_authorized_networks_config {\n    cidr_blocks {\n      cidr_block   = \"10.128.0.0/24\"\n      display_name = \"Corporate Bastion Subnet\"\n    }\n  }\n}",
-    "rollback_plan": "gcloud container clusters update payments-gke-prod --zone=us-central1-a --master-authorized-networks=0.0.0.0/0",
-    "verification_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(masterAuthorizedNetworksConfig.cidrBlocks)'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud container clusters describe payments-gke-prod --zone=us-central1-a --format='value(masterAuthorizedNetworksConfig.cidrBlocks)'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "SRE-Principal",
+        "Platform-Owner",
+        "Kubernetes-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-SQL-001",
@@ -35,11 +109,48 @@
     "standard": "CIS GCP Benchmark v2.0 - 6.2",
     "automated_tool": "gcp_sql_enforce_private_ip",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["Database-Admin", "Platform-Owner", "Security-Lead"],
+    "approver_roles": [
+      "Database-Admin",
+      "Platform-Owner",
+      "Security-Lead"
+    ],
     "cli_command": "gcloud sql instances patch customer-db-pg-prod --no-assign-ip --network=projects/payments-prod-vpc/global/networks/payments-vpc",
     "terraform_snippet": "resource \"google_sql_database_instance\" \"db\" {\n  name             = \"customer-db-pg-prod\"\n  database_version = \"POSTGRES_15\"\n  settings {\n    ip_configuration {\n      ipv4_enabled    = false\n      private_network = google_compute_network.vpc.id\n    }\n  }\n}",
-    "rollback_plan": "gcloud sql instances patch customer-db-pg-prod --assign-ip --authorized-networks=0.0.0.0/0",
-    "verification_probe": "gcloud sql instances describe customer-db-pg-prod --format='value(settings.ipConfiguration.ipv4Enabled)'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud sql instances describe customer-db-pg-prod --format='value(settings.ipConfiguration.ipv4Enabled)'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Database-Admin",
+        "Platform-Owner",
+        "Security-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-BQ-001",
@@ -49,11 +160,46 @@
     "standard": "CIS GCP Benchmark v2.0 - 7.1",
     "automated_tool": "gcp_bigquery_revoke_public_access",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["Data-Governance-Officer", "Platform-Owner"],
+    "approver_roles": [
+      "Data-Governance-Officer",
+      "Platform-Owner"
+    ],
     "cli_command": "bq update --source /tmp/revoked_access.json analytics-prod:customer_churn",
     "terraform_snippet": "resource \"google_bigquery_dataset\" \"dataset\" {\n  dataset_id = \"customer_churn\"\n  access {\n    role           = \"READER\"\n    group_by_email = \"data-analysts@enterprise.internal\"\n  }\n}",
-    "rollback_plan": "bq update --add_access allAuthenticatedUsers:READER analytics-prod:customer_churn",
-    "verification_probe": "bq show --format=prettyjson analytics-prod:customer_churn | grep -i allAuthenticatedUsers"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "bq show --format=prettyjson analytics-prod:customer_churn | grep -i allAuthenticatedUsers",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Data-Governance-Officer",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-IAM-001",
@@ -63,11 +209,46 @@
     "standard": "CIS GCP Benchmark v2.0 - 1.4",
     "automated_tool": "gcp_iam_enforce_least_privilege",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["IAM-Administrator", "Platform-Owner"],
+    "approver_roles": [
+      "IAM-Administrator",
+      "Platform-Owner"
+    ],
     "cli_command": "gcloud projects remove-iam-policy-binding analytics-prod --member=serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com --role=roles/owner && gcloud projects add-iam-policy-binding analytics-prod --member=serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com --role=roles/bigquery.jobUser",
     "terraform_snippet": "resource \"google_project_iam_member\" \"etl_sa\" {\n  project = \"analytics-prod\"\n  role    = \"roles/bigquery.jobUser\"\n  member  = \"serviceAccount:${google_service_account.etl.email}\"\n}",
-    "rollback_plan": "gcloud projects add-iam-policy-binding analytics-prod --member=serviceAccount:etl-batch-sa@analytics-prod.iam.gserviceaccount.com --role=roles/owner",
-    "verification_probe": "gcloud projects get-iam-policy analytics-prod --flatten='bindings[].members' --filter='bindings.members:etl-batch-sa'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud projects get-iam-policy analytics-prod --flatten='bindings[].members' --filter='bindings.members:etl-batch-sa'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "IAM-Administrator",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-GCS-001",
@@ -76,12 +257,45 @@
     "target_resource_type": "storage.googleapis.com/Bucket",
     "standard": "CIS GCP Benchmark v2.0 - 5.1",
     "automated_tool": "gcp_storage_remove_public_access",
-    "governance_default": "AUTO_EXECUTE",
-    "approver_roles": ["DevOps-Engineer"],
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "DevOps-Engineer"
+    ],
     "cli_command": "gcloud storage buckets update gs://retail-app-invoices-dev --public-access-prevention && gsutil iam ch -d allUsers:roles/storage.objectViewer gs://retail-app-invoices-dev",
     "terraform_snippet": "resource \"google_storage_bucket\" \"invoices\" {\n  name                     = \"retail-app-invoices-dev\"\n  public_access_prevention = \"enforced\"\n  uniform_bucket_level_access = true\n}",
-    "rollback_plan": "gcloud storage buckets update gs://retail-app-invoices-dev --no-public-access-prevention",
-    "verification_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(iamConfiguration.publicAccessPrevention)'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud storage buckets describe gs://retail-app-invoices-dev --format='value(iamConfiguration.publicAccessPrevention)'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "DevOps-Engineer"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-RUN-001",
@@ -91,11 +305,46 @@
     "standard": "GCP Cloud Run Security Baseline",
     "automated_tool": "gcp_cloudrun_enforce_authentication",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["Platform-Owner", "Application-Security-Lead"],
+    "approver_roles": [
+      "Platform-Owner",
+      "Application-Security-Lead"
+    ],
     "cli_command": "gcloud run services remove-iam-policy-binding payment-processor-service --region=us-central1 --member=allUsers --role=roles/run.invoker",
     "terraform_snippet": "resource \"google_cloud_run_service_iam_member\" \"member\" {\n  service  = google_cloud_run_service.service.name\n  location = \"us-central1\"\n  role     = \"roles/run.invoker\"\n  member   = \"serviceAccount:api-gateway-sa@payments-prod.iam.gserviceaccount.com\"\n}",
-    "rollback_plan": "gcloud run services add-iam-policy-binding payment-processor-service --region=us-central1 --member=allUsers --role=roles/run.invoker",
-    "verification_probe": "gcloud run services get-iam-policy payment-processor-service --region=us-central1 --format='value(bindings.members)'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud run services get-iam-policy payment-processor-service --region=us-central1 --format='value(bindings.members)'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Platform-Owner",
+        "Application-Security-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
   },
   {
     "remediation_id": "REM-KMS-001",
@@ -105,10 +354,571 @@
     "standard": "CIS GCP Benchmark v2.0 - 1.10",
     "automated_tool": "gcp_kms_set_rotation_schedule",
     "governance_default": "REQUIRE_HUMAN_APPROVAL",
-    "approver_roles": ["Security-Lead", "Platform-Owner"],
+    "approver_roles": [
+      "Security-Lead",
+      "Platform-Owner"
+    ],
     "cli_command": "gcloud kms keys set-rotation-schedule payment-kek --keyring=kms-prod --location=us-central1 --rotation-period=7776000s --next-rotation-time=2026-12-01T00:00:00Z",
     "terraform_snippet": "resource \"google_kms_crypto_key\" \"key\" {\n  name            = \"payment-kek\"\n  key_ring        = google_kms_key_ring.keyring.id\n  rotation_period = \"7776000s\"\n}",
-    "rollback_plan": "gcloud kms keys set-rotation-schedule payment-kek --keyring=kms-prod --location=us-central1 --rotation-period=\"\"",
-    "verification_probe": "gcloud kms keys describe payment-kek --keyring=kms-prod --location=us-central1 --format='value(rotationPeriod)'"
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud kms keys describe payment-kek --keyring=kms-prod --location=us-central1 --format='value(rotationPeriod)'",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Security-Lead",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if already compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate policy independently",
+      "Run service-health checks",
+      "Record before/after configuration and execution audit metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE",
+    "notes": "CLI and Terraform examples are illustrative; validate command/API semantics, scope, provider schema, dependencies, and plan before execution."
+  },
+  {
+    "remediation_id": "REM-SQL-BACKUP-001",
+    "category": "DATABASE_BACKUP_DISABLED",
+    "title": "Enable Cloud SQL Automated Backups",
+    "target_resource_type": "sqladmin.googleapis.com/Instance",
+    "standard": "CIS GCP Benchmark v2.0 - 6.7",
+    "automated_tool": "gcp_sql_enable_automated_backups",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Database-Admin",
+      "Platform-Owner"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud sql instances describe RESOURCE_NAME --format=\"value(settings.backupConfiguration.enabled)\"",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Validate backup retention, start time, recovery objectives, and restore procedure before applying.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Database-Admin",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-GKE-WI-001",
+    "category": "GKE_WORKLOAD_IDENTITY_DISABLED",
+    "title": "Enable GKE Workload Identity",
+    "target_resource_type": "container.googleapis.com/Cluster",
+    "standard": "CIS GCP Benchmark v2.0 - 4.2",
+    "automated_tool": "gcp_gke_enable_workload_identity",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Kubernetes-Platform-Owner",
+      "Security-Lead"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud container clusters describe RESOURCE_NAME --format=\"value(workloadIdentityConfig.workloadPool)\"",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Inventory service-account bindings and validate workload identity mapping before cluster changes.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Kubernetes-Platform-Owner",
+        "Security-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-IAM-KEY-001",
+    "category": "IAM_KEY_UNROTATED",
+    "title": "Rotate Service Account Key Safely",
+    "target_resource_type": "iam.googleapis.com/ServiceAccountKey",
+    "standard": "CIS GCP Benchmark v2.0 - 1.3",
+    "automated_tool": "gcp_iam_rotate_sa_key",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "IAM-Owner",
+      "Application-Owner"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud iam service-accounts keys list --iam-account=SERVICE_ACCOUNT_EMAIL",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Never re-enable an exposed or expired key automatically; keep rollback to consumer configuration and escalate if rotation fails.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "IAM-Owner",
+        "Application-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-PUBSUB-CMEK-001",
+    "category": "PUBSUB_MISSING_CMEK",
+    "title": "Configure CMEK for Pub/Sub Topic",
+    "target_resource_type": "pubsub.googleapis.com/Topic",
+    "standard": "Google Cloud Security Baseline - Pub/Sub CMEK",
+    "automated_tool": "gcp_pubsub_configure_cmek",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Messaging-Owner",
+      "Cloud-Security-Lead"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud pubsub topics describe RESOURCE_NAME",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Confirm key location, IAM grants, existing topic compatibility, and message-processing impact before applying.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Messaging-Owner",
+        "Cloud-Security-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-SECRET-CMEK-001",
+    "category": "SECRET_UNENCRYPTED",
+    "title": "Enforce Approved Encryption for Secret Manager",
+    "target_resource_type": "secretmanager.googleapis.com/Secret",
+    "standard": "Google Cloud Security Baseline - Secret Manager",
+    "automated_tool": "gcp_secretmanager_enforce_encryption",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Secrets-Manager",
+      "Cloud-Security-Lead"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud secrets describe RESOURCE_NAME",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Do not remove an active encryption key automatically; validate key permissions and secret access before changes.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Secrets-Manager",
+        "Cloud-Security-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-GCS-CMEK-001",
+    "category": "STORAGE_MISSING_CMEK",
+    "title": "Configure CMEK for Cloud Storage Bucket",
+    "target_resource_type": "storage.googleapis.com/Bucket",
+    "standard": "CIS GCP Benchmark v2.0 - 5.3",
+    "automated_tool": "gcp_storage_enforce_cmek",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Cloud-Security-Lead",
+      "Storage-Owner",
+      "Platform-Owner"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud storage buckets describe gs://BUCKET_NAME --format=\"value(encryption.defaultKmsKeyName)\"",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Verify key location, service-agent permissions, retention/legal-hold constraints, and recovery plan. Do not clear CMEK as automatic rollback.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Cloud-Security-Lead",
+        "Storage-Owner",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-GCS-ACL-001",
+    "category": "STORAGE_OBJECT_ACL_EXPOSURE",
+    "title": "Remove Public Object ACL Exposure",
+    "target_resource_type": "storage.googleapis.com/Bucket",
+    "standard": "CIS GCP Benchmark v2.0 - 5.2",
+    "automated_tool": "gcp_storage_remove_public_object_acls",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Storage-Owner",
+      "Cloud-Security-Lead"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud storage buckets describe gs://BUCKET_NAME",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Capture current IAM/ACL state; never restore public ACL grants automatically. Confirm application access remains functional.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Storage-Owner",
+        "Cloud-Security-Lead"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-VM-EIP-001",
+    "category": "VM_EXTERNAL_IP",
+    "title": "Remove Unapproved External IP from VM",
+    "target_resource_type": "compute.googleapis.com/Instance",
+    "standard": "CIS GCP Benchmark v2.0 - 3.8",
+    "automated_tool": "gcp_compute_remove_external_ip",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Network-Admin",
+      "Application-Owner",
+      "Platform-Owner"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud compute instances describe RESOURCE_NAME --zone=ZONE --format=\"value(networkInterfaces[].accessConfigs[].natIP)\"",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Do not automatically restore public addressing; use approved private access or a time-bound break-glass process.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Network-Admin",
+        "Application-Owner",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-FUNC-INGRESS-001",
+    "category": "FUNCTION_PUBLIC_INGRESS",
+    "title": "Restrict Cloud Function Ingress",
+    "target_resource_type": "cloudfunctions.googleapis.com/CloudFunction",
+    "standard": "Google Cloud Security Baseline - Functions 0.1",
+    "automated_tool": "gcp_functions_restrict_ingress",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Application-Owner",
+      "Platform-Owner"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud functions describe RESOURCE_NAME --region=REGION --format=\"value(ingressSettings)\"",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Do not restore public ingress automatically; use a time-bound break-glass approval if an exception is required.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Application-Owner",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
+  },
+  {
+    "remediation_id": "REM-SQL-SSL-001",
+    "category": "DATABASE_SSL_ENFORCEMENT",
+    "title": "Require TLS for Cloud SQL Connections",
+    "target_resource_type": "sqladmin.googleapis.com/Instance",
+    "standard": "CIS GCP Benchmark v2.0 - 6.4",
+    "automated_tool": "gcp_sql_enforce_ssl_only",
+    "governance_default": "REQUIRE_HUMAN_APPROVAL",
+    "approver_roles": [
+      "Database-Admin",
+      "Application-Owner",
+      "Platform-Owner"
+    ],
+    "cli_command": null,
+    "terraform_snippet": null,
+    "rollback_plan": "Do not roll back to a known-noncompliant or publicly exposed configuration. Restore only a verified last-known-good configuration that still passes current policy; otherwise stop, preserve evidence, and escalate through the incident/change process.",
+    "verification_probe": "gcloud sql instances describe RESOURCE_NAME --format=\"value(settings.ipConfiguration.sslMode)\"",
+    "action_version": "1.0.0",
+    "supported_environments": [
+      "development",
+      "staging",
+      "production"
+    ],
+    "preconditions": [
+      "Do not automatically restore unencrypted connections; stop rollout and escalate. Any exception must be time-bound and audited.",
+      "Resolve resource identity and obtain a fresh configuration snapshot",
+      "Check change window, dependencies, IAM permissions, and service health",
+      "Verify exact project, resource ID, region/zone, and current state",
+      "Generate and review a dry-run/plan where supported",
+      "Confirm change is authorized for the target environment"
+    ],
+    "risk_class": "HIGH",
+    "approval_policy": {
+      "mode": "REQUIRE_HUMAN_APPROVAL",
+      "required_roles": [
+        "Database-Admin",
+        "Application-Owner",
+        "Platform-Owner"
+      ],
+      "break_glass_allowed": true,
+      "break_glass_must_be_time_bound": true,
+      "audit_required": true
+    },
+    "idempotency_strategy": "Read current state; skip if compliant; apply only when preconditions pass; re-read and compare desired state.",
+    "postconditions": [
+      "Re-evaluate the associated policy independently",
+      "Run a service-health probe",
+      "Record before/after configuration and actor/action metadata"
+    ],
+    "execution_enabled_by_default": false,
+    "runtime_authorization_required": true,
+    "notes": "Template metadata only; tool implementation and command arguments require provider/API validation before production use.",
+    "artifact_validation_status": "UNVALIDATED_EXAMPLE"
   }
 ]

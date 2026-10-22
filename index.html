@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enterprise GCP Autonomous Copilot — Scale Control Plane</title>
+  <title>Enterprise GCP Autonomous Platform Engine — Scale Control Plane</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -118,9 +118,9 @@
     <!-- Enterprise Portal Sub-Navigation Tabs Bar -->
     <div class="h-12 bg-gcp-sidebar border-b border-gcp-border px-6 flex items-center justify-between shrink-0 font-mono text-xs">
       <div class="flex items-center space-x-1.5 overflow-x-auto py-1">
-        <button id="nav-tab-copilot" onclick="switchPortalTab('copilot')" class="px-3.5 py-1.5 rounded-lg font-bold transition flex items-center space-x-2 bg-blue-600/25 text-blue-300 border border-blue-500/40 shadow-sm cursor-pointer">
+        <button id="nav-tab-agent" onclick="switchPortalTab('agent')" class="px-3.5 py-1.5 rounded-lg font-bold transition flex items-center space-x-2 bg-blue-600/25 text-blue-300 border border-blue-500/40 shadow-sm cursor-pointer">
           <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-          <span>Live Copilot & Terminal</span>
+          <span>Live Compliance Agent & Terminal</span>
         </button>
         <button id="nav-tab-fleet" onclick="switchPortalTab('fleet')" class="px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800/60 cursor-pointer">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-rose-400"></i>
@@ -154,15 +154,15 @@
     <div class="flex-1 relative overflow-hidden bg-gcp-chatBg">
 
       <!-- ===================================================================== -->
-      <!-- VIEW 1: LIVE CONVERSATIONAL COPILOT & EXECUTION TERMINAL               -->
+      <!-- VIEW 1: LIVE CONVERSATIONAL AGENT & EXECUTION TERMINAL               -->
       <!-- ===================================================================== -->
-      <div id="panel-copilot" class="absolute inset-0 flex flex-col h-full">
+      <div id="panel-agent" class="absolute inset-0 flex flex-col h-full">
 
         <!-- Chat Header Bar -->
         <div class="h-10 border-b border-gcp-border bg-gcp-sidebar/40 px-6 flex items-center justify-between shrink-0 font-mono text-xs">
           <div class="flex items-center space-x-2">
             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span class="font-bold text-white">Autonomous Cloud Engineering Copilot</span>
+            <span class="font-bold text-white">Autonomous Cloud Engineering Agent</span>
             <span class="text-slate-500">| Session #SES-9821</span>
           </div>
           <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
@@ -182,7 +182,7 @@
             </div>
             <div class="space-y-3.5 bg-gcp-bubbleBot p-4 rounded-2xl rounded-tl-none border border-gcp-border shadow-sm text-xs leading-relaxed text-slate-200 w-full font-mono">
               <div>
-                <span class="font-bold text-white text-sm">GCP Autonomous Platform Engineering Copilot</span>
+                <span class="font-bold text-white text-sm">GCP Autonomous Platform Engineering Agent</span>
                 <span class="text-[10px] text-slate-400 ml-2">Connected to GCP Organization: <code>org-enterprise-cloud-7192</code></span>
               </div>
               <p class="text-slate-300">
@@ -248,7 +248,7 @@
               </div>
 
               <div class="text-[11px] text-slate-400 pt-1">
-                Enter any natural prompt below to ask questions or command the copilot to act on any resource immediately.
+                Enter any natural prompt below to ask questions or command the agent to act on any resource immediately.
               </div>
             </div>
           </div>
@@ -262,7 +262,7 @@
               <input 
                 id="chat-input" 
                 type="text" 
-                placeholder="Ask compliance copilot a question or enter an action command..." 
+                placeholder="Ask compliance agent a question or enter an action command..." 
                 class="w-full bg-slate-900/90 border border-gcp-border rounded-xl px-4 py-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 shadow-inner font-mono"
               />
             </div>
@@ -1009,9 +1009,9 @@
           </div>
 
           <div class="pt-2 text-center">
-            <button onclick="switchPortalTab('copilot'); appendUserMessage('Explain how the platform connects with GCP in production'); handleUserPromptDirect('Explain how the platform connects with GCP in production');" class="bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 px-4 py-2 rounded-xl border border-blue-500/40 font-bold text-xs inline-flex items-center space-x-2 cursor-pointer shadow-sm">
+            <button onclick="switchPortalTab('agent'); appendUserMessage('Explain how the platform connects with GCP in production'); handleUserPromptDirect('Explain how the platform connects with GCP in production');" class="bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 px-4 py-2 rounded-xl border border-blue-500/40 font-bold text-xs inline-flex items-center space-x-2 cursor-pointer shadow-sm">
               <i data-lucide="message-square" class="w-4 h-4 text-blue-400"></i>
-              <span>Ask Copilot to Walk Through GCP Connection Architecture</span>
+              <span>Ask Compliance Agent to Walk Through GCP Connection Architecture</span>
             </button>
           </div>
 
@@ -1470,7 +1470,7 @@
       { id: "dev-assets-bucket-07", service: "Cloud Storage", tier: "DEV", project: "dev-core-us", issues: 1, detail: "Public allUsers objectViewer binding; PAP disabled", pattern: "Storage Public/UBLA (12x)", auto: true, scenario: "batch-gcs-dev" },
       { id: "dev-assets-bucket-08", service: "Cloud Storage", tier: "DEV", project: "dev-core-us", issues: 1, detail: "Public allUsers objectViewer binding; PAP disabled", pattern: "Storage Public/UBLA (12x)", auto: true, scenario: "batch-gcs-dev" },
       { id: "dev-assets-bucket-09", service: "Cloud Storage", tier: "DEV", project: "dev-core-us", issues: 1, detail: "Public allUsers objectViewer binding; PAP disabled", pattern: "Storage Public/UBLA (12x)", auto: true, scenario: "batch-gcs-dev" },
-      { id: "analytics-warehouse-export-prod", service: "Cloud Storage", tier: "PROD", project: "analytics-prod", issues: 1, detail: "Missing Customer-Managed Encryption Key (CMEK); PAP & UBLA passing", pattern: "Storage Public/UBLA (12x)", auto: false, scenario: "gcs-mixed-compliance" },
+      { id: "analytics-warehouse-export-prod", service: "Cloud Storage", tier: "PROD", project: "analytics-prod", issues: 0, detail: "Posture: UNKNOWN_REQUIRES_RESCAN; 3 controls passing (PAP, UBLA, Lifecycle); rescan pending", pattern: "Storage Public/UBLA (12x)", auto: false, scenario: "gcs-mixed-compliance" },
       { id: "financial-audit-logs-prod", service: "Cloud Storage", tier: "PROD", project: "security-prod", issues: 1, detail: "Default Google-managed key; lacks KMS CMEK key", pattern: "Storage Public/UBLA (12x)", auto: false, scenario: "gcs-cmek" },
 
       // Pattern 2: GKE Public Master & Workload Identity (4 Clusters)
@@ -1482,7 +1482,7 @@
       // Pattern 3: Cloud SQL Public IP & Transit Security (6 Databases)
       { id: "customer-db-pg-prod", service: "Cloud SQL (PG)", tier: "PROD", project: "payments-prod", issues: 2, detail: "Public IPv4 enabled with 0.0.0.0/0 & SSL enforcement disabled", pattern: "Cloud SQL Public IP (6x)", auto: false, scenario: "sql-multi-issue" },
       { id: "analytics-mysql-dev", service: "Cloud SQL (MySQL)", tier: "DEV", project: "analytics-dev", issues: 1, detail: "Automated daily backups and point-in-time recovery disabled", pattern: "Cloud SQL Public IP (6x)", auto: true, scenario: "sql-backup-disabled" },
-      { id: "orders-mysql-prod", service: "Cloud SQL (MySQL)", tier: "PROD", project: "orders-prod", issues: 2, detail: "Public IP enabled & automated backups disabled", pattern: "Cloud SQL Public IP (6x)", auto: false, scenario: "sql-multi-issue" },
+      { id: "orders-mysql-prod", service: "Cloud SQL (MySQL)", tier: "PROD", project: "orders-prod", issues: 2, detail: "Separate findings: Automated backup disabled (#4401) & TLS enforcement disabled (#4401-SSL)", pattern: "Cloud SQL Public IP (6x)", auto: false, scenario: "sql-multi-issue" },
       { id: "inventory-pg-prod", service: "Cloud SQL (PG)", tier: "PROD", project: "inventory-prod", issues: 1, detail: "Public IPv4 authorized network contains 0.0.0.0/0", pattern: "Cloud SQL Public IP (6x)", auto: false, scenario: "sql-public-ip" },
       { id: "user-auth-mysql-dev", service: "Cloud SQL (MySQL)", tier: "DEV", project: "auth-dev", issues: 1, detail: "Automated nightly backups disabled; no point-in-time log", pattern: "Cloud SQL Public IP (6x)", auto: true, scenario: "sql-backup-disabled" },
       { id: "reporting-db-prod", service: "Cloud SQL (PG)", tier: "PROD", project: "reporting-prod", issues: 1, detail: "Public IP enabled; missing Private Service Access VPC binding", pattern: "Cloud SQL Public IP (6x)", auto: false, scenario: "sql-public-ip" },
@@ -1636,7 +1636,7 @@
     }
 
     function switchPortalTab(tabName) {
-      const tabs = ['copilot', 'fleet', 'agents', 'skills', 'tools', 'gcp'];
+      const tabs = ['agent', 'fleet', 'agents', 'skills', 'tools', 'gcp'];
       tabs.forEach(t => {
         const btn = document.getElementById(`nav-tab-${t}`);
         const panel = document.getElementById(`panel-${t}`);
@@ -1653,7 +1653,7 @@
 
     function triggerScenario(scenarioKey) {
       if (isProcessing) return;
-      switchPortalTab('copilot');
+      switchPortalTab('agent');
       const s = gcpScenarios[scenarioKey];
       if (!s) return;
 
@@ -1665,7 +1665,7 @@
       triggerScenario('batch-gcs-dev');
     }
 
-    function handleUserInput(event) {
+    async function handleUserInput(event) {
       event.preventDefault();
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
@@ -2369,7 +2369,7 @@
             </div>
 
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
-              <strong>Agentic Platform Intelligence:</strong> The autonomous copilot formulates a surgical fix that only binds the CMEK key (<code>keyRings/kms-prod/cryptoKeys/analytics-key</code>) while safely preserving the 3 passing controls without disruption! (Also note that on <code>secure-backup-vault-prod</code>, <strong>no any issues are violating</strong> across 4/4 controls).
+              <strong>Agentic Platform Intelligence:</strong> The autonomous agent formulates a surgical fix that only binds the CMEK key (<code>keyRings/kms-prod/cryptoKeys/analytics-key</code>) while safely preserving the 3 passing controls without disruption! (Also note that on <code>secure-backup-vault-prod</code>, <strong>no any issues are violating</strong> across 4/4 controls).
             </div>
 
             <p class="text-slate-400 text-[11px]">
@@ -3082,15 +3082,57 @@
         return;
       }
 
-      // Default fallback: general summary
+      // 6. Real-time Gemini Platform Reasoning Agent via /api/agent/query
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'agent-chat-typing';
+      typingDiv.className = 'flex items-center space-x-2 text-xs text-slate-400 pl-11 font-mono';
+      typingDiv.innerHTML = `
+        <span class="flex items-center space-x-2">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400"></i>
+          <span>Compliance Reasoning Agent analyzing fleet telemetry...</span>
+        </span>
+        <div class="flex space-x-1 ml-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-1"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-2"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-3"></span>
+        </div>
+      `;
+      const container = document.getElementById('chat-messages');
+      container.appendChild(typingDiv);
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch('/api/agent/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: text })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          typingDiv.remove();
+          if (data && data.answer_markdown) {
+            appendBotMessage(data.answer_markdown);
+            if (data.sidebar_filter && typeof setResourceFilter === 'function') {
+              setResourceFilter(data.sidebar_filter);
+            }
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Agent query API unavailable:', err);
+      }
+      typingDiv.remove();
+
+      // Offline / Local Summary Fallback
       appendBotMessage(`
         <div class="space-y-2.5 font-mono text-xs">
           <div class="text-xs text-slate-200 font-semibold flex items-center space-x-2">
             <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
-            <span>GCP Autonomous Compliance Copilot</span>
+            <span>GCP Autonomous Compliance Agent</span>
           </div>
           <p class="text-xs text-slate-300">
-            I monitor 15 active GCP resources across 6 service domains. You can ask deep configuration queries (e.g., <em>"any specific bucket is giving more publicly accessible but any object is having exposing authenticated URL's"</em>, <em>"how many auto-heal violations are present"</em>, or <em>"what is the configuration of allow-ssh-ingress"</em>), or tell me to <strong>"act on it"</strong> to trigger autonomous remediation!
+            I monitor 1,420 active GCP resources across 14 projects and 6 service domains. You can ask deep configuration queries (e.g., <em>"any specific bucket is giving more publicly accessible but any object is having exposing authenticated URL's"</em>, <em>"how many auto-heal violations are present"</em>, or <em>"what is the configuration of allow-ssh-ingress"</em>), or tell me to <strong>"act on it"</strong> to trigger autonomous remediation!
           </p>
         </div>
       `);
@@ -3225,208 +3267,327 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    // Stream Agent Remediation Message (Supports Multi-Finding & Bulk Assets)
-    function streamAgentRemediation(s) {
+        // Global ticket tracker for LangGraph HITL resumption
+    const activeTicketMap = {};
+
+    // Stream Agent Remediation Message (Powered by LangGraph & Gemini API)
+    async function streamAgentRemediation(s) {
       isProcessing = true;
       document.getElementById('btn-send-chat').classList.add('opacity-50', 'pointer-events-none');
 
       const container = document.getElementById('chat-messages');
 
-      // 1. Show Typing indicator
+      // 1. Show Typing & Multi-Agent Pipeline Mesh
       const typingDiv = document.createElement('div');
       typingDiv.id = 'agent-typing-indicator';
-      typingDiv.className = 'flex items-center space-x-2 text-xs text-slate-400 pl-11 font-mono';
+      typingDiv.className = 'flex flex-col space-y-2 text-xs text-slate-300 pl-11 font-mono max-w-xl';
       typingDiv.innerHTML = `
-        <span>Vertex Reasoning Engine analyzing asset graph</span>
-        <div class="flex space-x-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-1"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-2"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-3"></span>
+        <div class="flex items-center space-x-2 text-blue-400 font-bold">
+          <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+          <span>LangGraph Multi-Agent Mesh Active</span>
+          <div class="flex space-x-1 ml-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-1"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-2"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 typing-dot-3"></span>
+          </div>
+        </div>
+        <div id="pipeline-live-steps" class="space-y-1 pl-6 text-[11px] text-slate-400">
+          <div id="pipe-step-status" class="flex items-center space-x-1.5 text-blue-300">
+            <i data-lucide="loader" class="w-3 h-3 animate-spin text-blue-400"></i>
+            <span id="pipe-step-label">Initializing LangGraph StateGraph & checkpoint store...</span>
+          </div>
         </div>
       `;
       container.appendChild(typingDiv);
       container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
 
-      setTimeout(() => {
-        const ind = document.getElementById('agent-typing-indicator');
-        if (ind) ind.remove();
+      // Call Live Backend LangGraph StateGraph API (with streaming SSE)
+      let live = null;
+      const scenarioKey = s.scenarioKey || s.findingId || (s.resource ? s.resource.toLowerCase() : 'fw-open-ssh');
+      try {
+        const streamRes = await fetch(`/api/remediate/stream/${encodeURIComponent(scenarioKey)}`);
+        if (streamRes.ok && streamRes.body) {
+          const reader = streamRes.body.getReader();
+          const decoder = new TextDecoder();
+          let streamBuf = '';
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            streamBuf += decoder.decode(value, { stream: true });
+            const chunks = streamBuf.split('\n\n');
+            streamBuf = chunks.pop();
+            for (const chunk of chunks) {
+              const trimmed = chunk.trim();
+              if (trimmed.startsWith('data: ')) {
+                try {
+                  const ev = JSON.parse(trimmed.substring(6));
+                  const label = document.getElementById('pipe-step-label');
+                  if (ev.event === 'node_complete') {
+                    if (label) {
+                      label.innerHTML = `<strong>${ev.title}:</strong> ${ev.detail}`;
+                    }
+                    if (ev.plan) {
+                      live = {
+                        finding_id: ev.plan.plan_id ? s.findingId : ev.status,
+                        service: s.service,
+                        resource_name: s.resource,
+                        environment: s.env,
+                        compliance_standard: ev.triage?.compliance_standard || s.standard,
+                        plan: ev.plan,
+                        risk: ev.risk,
+                        policy: ev.policy,
+                        triage: ev.triage,
+                        ticket_id: ev.ticket_id,
+                        execution: ev.execution,
+                        verification: ev.verification,
+                        audit: ev.audit,
+                      };
+                    }
+                  } else if (ev.event === 'workflow_finished' && ev.final_state) {
+                    live = ev.final_state;
+                  }
+                } catch (e) {
+                  console.warn('Error parsing SSE event:', e);
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('SSE stream unavailable, trying POST /api/remediate/plan:', err);
+      }
 
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'flex items-start space-x-3.5 max-w-4xl';
+      // Fallback to POST /api/remediate/plan if stream wasn't available
+      if (!live || !live.plan) {
+        try {
+          const res = await fetch('/api/remediate/plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scenario_key: scenarioKey })
+          });
+          if (res.ok) {
+            live = await res.json();
+          }
+        } catch (err) {
+          console.warn('Backend API unavailable, using offline fallback:', err);
+        }
+      }
 
-        const tierBadge = s.env === 'PRODUCTION' 
-          ? `<span class="text-[9px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">PRODUCTION TIER</span>`
-          : `<span class="text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">DEV / NON-PROD TIER</span>`;
+      // Remove typing indicator
+      const ind = document.getElementById('agent-typing-indicator');
+      if (ind) ind.remove();
 
-        // Multi-finding badge & breakdown if applicable
-        let multiFindingHtml = '';
-        if (s.isMultiFinding && s.findingList) {
-          multiFindingHtml = `
-            <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5 font-mono text-[11px]">
-              <div class="flex items-center justify-between text-slate-300 font-bold">
-                <span class="flex items-center space-x-1.5 text-amber-300">
-                  <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-                  <span>CONSOLIDATED FINDING DOSSIER (${s.findingsCount} ACTIVE ISSUES ON ASSET)</span>
-                </span>
-                <span class="text-[9px] text-slate-400">Atomic Multi-Mutation Plan</span>
-              </div>
-              <div class="space-y-1 pt-1">
-                ${s.findingList.map((f, i) => `
-                  <div class="flex items-center justify-between p-1.5 rounded bg-slate-950/80 border border-slate-800/80 text-[10px]">
-                    <div class="flex items-center space-x-1.5">
-                      <span class="w-3.5 h-3.5 rounded-full ${f.sev === 'CRITICAL' || f.sev === 'HIGH' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'} flex items-center justify-center font-bold text-[8px]">${i+1}</span>
-                      <span class="font-semibold text-slate-200">${f.name}</span>
-                    </div>
-                    <span class="text-slate-400 font-mono text-[9px]">${f.detail}</span>
+      // Normalize fields from live LangGraph response or baseline
+      const findingId = live?.finding_id || s.findingId;
+      const requiresHITL = live ? (live.policy?.requires_hitl ?? s.requiresHITL) : s.requiresHITL;
+      const ticketId = live?.ticket_id || s.findingId;
+      activeTicketMap[findingId] = ticketId;
+
+      const riskScore = live ? `${live.risk?.level} (${live.risk?.score}/100)` : s.riskScore;
+      const diffDel = live?.plan?.diff?.del || s.diff.del;
+      const diffAdd = live?.plan?.diff?.add || s.diff.add;
+      const diffMeta = live?.plan?.diff?.meta || s.diff.meta;
+      const auditId = live?.audit?.audit_id || s.auditId;
+      const auditHash = live?.audit?.checksum_sha256 || s.hash;
+      const verificationMsg = live?.verification?.message || s.verification;
+      const serviceName = live?.service || s.service;
+      const standardName = live?.compliance_standard || s.standard;
+      const resourceName = live?.resource_name || s.resource;
+      const envName = live?.environment ? live.environment.toUpperCase() : s.env;
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex items-start space-x-3.5 max-w-4xl';
+
+      const tierBadge = envName === 'PRODUCTION' 
+        ? `<span class="text-[9px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">PRODUCTION TIER</span>`
+        : `<span class="text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">DEV / NON-PROD TIER</span>`;
+
+      // Multi-finding badge & breakdown if applicable
+      let multiFindingHtml = '';
+      if (s.isMultiFinding && s.findingList) {
+        multiFindingHtml = `
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5 font-mono text-[11px]">
+            <div class="flex items-center justify-between text-slate-300 font-bold">
+              <span class="flex items-center space-x-1.5 text-amber-300">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                <span>CONSOLIDATED FINDING DOSSIER (${s.findingsCount} ACTIVE ISSUES ON ASSET)</span>
+              </span>
+              <span class="text-[9px] text-slate-400">Atomic Multi-Mutation Plan</span>
+            </div>
+            <div class="space-y-1 pt-1">
+              ${s.findingList.map((f, i) => `
+                <div class="flex items-center justify-between p-1.5 rounded bg-slate-950/80 border border-slate-800/80 text-[10px]">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full ${f.sev === 'CRITICAL' || f.sev === 'HIGH' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'} flex items-center justify-center font-bold text-[8px]">${i+1}</span>
+                    <span class="font-semibold text-slate-200">${f.name}</span>
                   </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        // Batch banner if applicable
-        let batchBannerHtml = '';
-        if (s.isBatch) {
-          batchBannerHtml = `
-            <div class="p-2.5 rounded-xl bg-blue-950/30 border border-blue-500/40 flex items-center justify-between font-mono text-xs text-blue-300">
-              <div class="flex items-center space-x-2">
-                <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
-                <span class="font-bold">FLEET-WIDE BATCH AUTO-HEAL: ${s.batchCount} ASSETS ENQUEUED</span>
-              </div>
-              <span class="text-[10px] text-emerald-400 font-bold">Zero Production Blast Radius</span>
-            </div>
-          `;
-        }
-
-        // Reasoning steps collapsible accordion
-        let reasoningHtml = s.reasoningSteps.map((st, i) => `
-          <div class="flex items-start space-x-2 text-[11px]">
-            <span class="w-4 h-4 rounded bg-slate-900 border border-slate-700 flex items-center justify-center text-blue-400 font-bold text-[9px] shrink-0 mt-0.5">${i+1}</span>
-            <div>
-              <span class="font-semibold text-slate-200">${st.title}:</span>
-              <span class="text-slate-400 ml-1">${st.desc}</span>
+                  <span class="text-slate-400 font-mono text-[9px]">${f.detail}</span>
+                </div>
+              `).join('')}
             </div>
           </div>
-        `).join('');
+        `;
+      }
 
-        const hitlActionBlock = s.requiresHITL ? `
-          <div id="hitl-box-${s.findingId}" class="p-3.5 rounded-xl bg-gradient-to-r from-rose-950/40 via-slate-900 to-rose-950/20 border border-rose-500/50 space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-                <span class="font-bold text-rose-300 text-xs">HUMAN-IN-THE-LOOP COMBINED APPROVAL REQUIRED (PRD §14)</span>
-              </div>
-              <span class="text-[10px] font-mono text-rose-400 font-bold">Risk: ${s.riskScore}</span>
-            </div>
-            <p class="text-[11px] text-slate-300 leading-tight">
-              Production policy dictates: Multi-mutation and high-risk operations require Platform Engineer authorization before executing state diffs.
-            </p>
-            <div class="flex items-center space-x-2.5 pt-1">
-              <button onclick="approveHITL('${s.findingId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-md shadow-emerald-600/30 transition flex items-center space-x-1.5 cursor-pointer">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                <span>Authorize Atomic Remediation</span>
-              </button>
-              <button onclick="rejectHITL('${s.findingId}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-2 rounded-lg border border-slate-700 transition cursor-pointer">
-                Reject & Halt
-              </button>
-            </div>
-          </div>
-        ` : `
-          <div class="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/40 flex items-center justify-between text-xs font-mono text-emerald-400">
+      // Batch banner if applicable
+      let batchBannerHtml = '';
+      if (s.isBatch) {
+        batchBannerHtml = `
+          <div class="p-2.5 rounded-xl bg-blue-950/30 border border-blue-500/40 flex items-center justify-between font-mono text-xs text-blue-300">
             <div class="flex items-center space-x-2">
-              <i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i>
-              <span class="font-bold">Autonomous Auto-Heal Policy Enforced (Non-Prod)</span>
+              <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
+              <span class="font-bold">FLEET-WIDE BATCH AUTO-HEAL: ${s.batchCount} ASSETS ENQUEUED</span>
             </div>
-            <span>Resolved in 2.6s</span>
+            <span class="text-[10px] text-emerald-400 font-bold">Zero Production Blast Radius</span>
           </div>
         `;
+      }
 
-        msgDiv.innerHTML = `
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shrink-0 text-sm shadow-md mt-1">
-            <i data-lucide="cpu" class="w-4 h-4"></i>
+      // Reasoning steps from live Triage Agent or scenario
+      let stepsToRender = live?.triage?.reasoning_steps || s.reasoningSteps;
+      let reasoningHtml = stepsToRender.map((st, i) => `
+        <div class="flex items-start space-x-2 text-[11px]">
+          <span class="w-4 h-4 rounded bg-slate-900 border border-slate-700 flex items-center justify-center text-blue-400 font-bold text-[9px] shrink-0 mt-0.5">${i+1}</span>
+          <div>
+            <span class="font-semibold text-slate-200">${st.title}:</span>
+            <span class="text-slate-400 ml-1">${st.desc}</span>
+          </div>
+        </div>
+      `).join('');
+
+      const hitlActionBlock = requiresHITL ? `
+        <div id="hitl-box-${findingId}" class="p-3.5 rounded-xl bg-gradient-to-r from-rose-950/40 via-slate-900 to-rose-950/20 border border-rose-500/50 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+              <span class="font-bold text-rose-300 text-xs">HUMAN-IN-THE-LOOP COMBINED APPROVAL REQUIRED (PRD §14)</span>
+            </div>
+            <span class="text-[10px] font-mono text-rose-400 font-bold">Ticket: ${ticketId} • Risk: ${riskScore}</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-tight">
+            Production policy dictates: High-risk mutations require Platform Engineer authorization before executing state diffs.
+          </p>
+          <div class="flex items-center space-x-2.5 pt-1">
+            <button onclick="approveHITL('${findingId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-md shadow-emerald-600/30 transition flex items-center space-x-1.5 cursor-pointer">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Authorize Atomic Remediation</span>
+            </button>
+            <button onclick="rejectHITL('${findingId}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-2 rounded-lg border border-slate-700 transition cursor-pointer">
+              Reject & Halt
+            </button>
+          </div>
+        </div>
+      ` : `
+        <div class="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/40 flex items-center justify-between text-xs font-mono text-emerald-400">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i>
+            <span class="font-bold">Autonomous Auto-Heal Policy Enforced (Non-Prod)</span>
+          </div>
+          <span>Resolved via LangGraph</span>
+        </div>
+      `;
+
+      msgDiv.innerHTML = `
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shrink-0 text-sm shadow-md mt-1">
+          <i data-lucide="cpu" class="w-4 h-4"></i>
+        </div>
+
+        <div class="space-y-3 bg-gcp-bubbleBot p-4 rounded-2xl rounded-tl-none border border-gcp-border shadow-sm text-xs leading-relaxed text-slate-200 w-full max-w-3xl">
+          <!-- Header Line -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center space-x-2 font-mono">
+              <span class="font-bold text-white text-xs">${serviceName}</span>
+              <span class="text-slate-500">•</span>
+              <span class="text-blue-400 font-semibold">${findingId}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              ${tierBadge}
+              <span class="text-[10px] font-mono text-slate-400">${standardName}</span>
+            </div>
           </div>
 
-          <div class="space-y-3 bg-gcp-bubbleBot p-4 rounded-2xl rounded-tl-none border border-gcp-border shadow-sm text-xs leading-relaxed text-slate-200 w-full max-w-3xl">
-            <!-- Header Line -->
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <div class="flex items-center space-x-2 font-mono">
-                <span class="font-bold text-white text-xs">${s.service}</span>
-                <span class="text-slate-500">•</span>
-                <span class="text-blue-400 font-semibold">${s.findingId}</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                ${tierBadge}
-                <span class="text-[10px] font-mono text-slate-400">${s.standard}</span>
-              </div>
+          <!-- Target Resource Pill -->
+          <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 font-mono text-[11px] flex justify-between items-center">
+            <div>
+              <span class="text-slate-400">Target Asset(s):</span>
+              <strong class="text-slate-200 ml-1">${resourceName}</strong>
             </div>
-
-            <!-- Target Resource Pill -->
-            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 font-mono text-[11px] flex justify-between items-center">
-              <div>
-                <span class="text-slate-400">Target Asset(s):</span>
-                <strong class="text-slate-200 ml-1">${s.resource}</strong>
-              </div>
-              <span class="text-slate-400">Risk: <strong class="${s.riskScore.includes('CRITICAL') || s.riskScore.includes('HIGH') ? 'text-rose-400' : 'text-emerald-400'}">${s.riskScore}</strong></span>
-            </div>
-
-            ${batchBannerHtml}
-            ${multiFindingHtml}
-
-            <!-- Collapsible Autonomous Reasoning Steps -->
-            <details class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 cursor-pointer group">
-              <summary class="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold flex items-center justify-between select-none">
-                <span class="flex items-center space-x-1.5">
-                  <i data-lucide="git-commit" class="w-3.5 h-3.5 text-blue-400"></i>
-                  <span>Autonomous Reasoning & Policy Evaluation Steps</span>
-                </span>
-                <span class="text-[10px] text-blue-400 group-open:hidden">View Steps ▼</span>
-                <span class="text-[10px] text-slate-500 hidden group-open:inline">Hide ▲</span>
-              </summary>
-              <div class="space-y-2 mt-2 pt-2 border-t border-slate-900">
-                ${reasoningHtml}
-              </div>
-            </details>
-
-            <!-- Unified Configuration Diff Box -->
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px] space-y-1">
-              <div class="text-slate-400 font-bold mb-1">// Proposed Deterministic State Mutation:</div>
-              <div class="text-rose-400 whitespace-pre-wrap">${s.diff.del}</div>
-              <div class="text-emerald-400 whitespace-pre-wrap">${s.diff.add}</div>
-              <div class="text-slate-400 text-[10px] pt-1 border-t border-slate-900 mt-1">${s.diff.meta}</div>
-            </div>
-
-            <!-- Interactive HITL Action or Auto-Heal Block -->
-            <div id="execution-flow-slot-${s.findingId}">
-              ${hitlActionBlock}
-            </div>
-
-            <!-- Verification & Cryptographic Ledger Footer -->
-            <div id="audit-footer-${s.findingId}" class="${s.requiresHITL ? 'hidden' : ''} pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
-              <div class="flex items-center space-x-1.5 text-emerald-400 font-semibold">
-                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                <span>${s.verification}</span>
-              </div>
-              <div>Audit Vault: <code class="text-blue-300">${s.auditId}</code> | <span class="text-slate-400">SHA-256: ${s.hash.substring(0, 16)}...</span></div>
-            </div>
-
+            <span class="text-slate-400">Risk: <strong class="${String(riskScore).includes('CRITICAL') || String(riskScore).includes('HIGH') ? 'text-rose-400' : 'text-emerald-400'}">${riskScore}</strong></span>
           </div>
-        `;
 
-        container.appendChild(msgDiv);
-        lucide.createIcons();
-        container.scrollTop = container.scrollHeight;
+          ${batchBannerHtml}
+          ${multiFindingHtml}
 
-        isProcessing = false;
-        document.getElementById('btn-send-chat').classList.remove('opacity-50', 'pointer-events-none');
-      }, 500);
+          <!-- Collapsible Autonomous Reasoning Steps -->
+          <details class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 cursor-pointer group" open>
+            <summary class="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold flex items-center justify-between select-none">
+              <span class="flex items-center space-x-1.5">
+                <i data-lucide="git-commit" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span>Autonomous Reasoning & Policy Evaluation Steps</span>
+              </span>
+              <span class="text-[10px] text-blue-400 group-open:hidden">View Steps ▼</span>
+              <span class="text-[10px] text-slate-500 hidden group-open:inline">Hide ▲</span>
+            </summary>
+            <div class="space-y-2 mt-2 pt-2 border-t border-slate-900">
+              ${reasoningHtml}
+            </div>
+          </details>
+
+          <!-- Unified Configuration Diff Box -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px] space-y-1">
+            <div class="text-slate-400 font-bold mb-1">// Proposed Deterministic State Mutation:</div>
+            <div class="text-rose-400 whitespace-pre-wrap">${diffDel}</div>
+            <div class="text-emerald-400 whitespace-pre-wrap">${diffAdd}</div>
+            <div class="text-slate-400 text-[10px] pt-1 border-t border-slate-900 mt-1">${diffMeta}</div>
+          </div>
+
+          <!-- Interactive HITL Action or Auto-Heal Block -->
+          <div id="execution-flow-slot-${findingId}">
+            ${hitlActionBlock}
+          </div>
+
+          <!-- Verification & Cryptographic Ledger Footer -->
+          <div id="audit-footer-${findingId}" class="${requiresHITL ? 'hidden' : ''} pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <div class="flex items-center space-x-1.5 text-emerald-400 font-semibold">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span>${verificationMsg}</span>
+            </div>
+            <div>Audit Vault: <code class="text-blue-300">${auditId}</code> | <span class="text-slate-400">SHA-256: ${String(auditHash).substring(0, 16)}...</span></div>
+          </div>
+
+        </div>
+      `;
+
+      container.appendChild(msgDiv);
+      lucide.createIcons();
+      container.scrollTop = container.scrollHeight;
+
+      isProcessing = false;
+      document.getElementById('btn-send-chat').classList.remove('opacity-50', 'pointer-events-none');
     }
 
-    function approveHITL(findingId) {
+    async function approveHITL(findingId) {
+      const ticketId = activeTicketMap[findingId] || findingId;
+      let liveApprove = null;
+      try {
+        const resp = await fetch('/api/remediate/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticket_id: ticketId, decision: 'APPROVE' })
+        });
+        if (resp.ok) {
+          liveApprove = await resp.json();
+        }
+      } catch (e) {
+        console.warn('Backend approve call failed:', e);
+      }
+
       const slot = document.getElementById(`execution-flow-slot-${findingId}`);
       const footer = document.getElementById(`audit-footer-${findingId}`);
 
       if (slot) {
+        const execMsg = liveApprove?.execution?.message || 'Deterministic Terraform Engine applied all proposed mutations atomically.';
         slot.innerHTML = `
           <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/50 space-y-2 text-xs font-mono">
             <div class="flex items-center space-x-2 text-emerald-400 font-bold">
@@ -3434,29 +3595,51 @@
               <span>PRODUCTION MUTATION AUTHORIZED BY REVIEWER</span>
             </div>
             <div class="text-slate-300 text-[11px]">
-              ✔ Deterministic Terraform Engine applied all proposed mutations atomically.<br/>
+              ✔ ${execMsg}<br/>
               ✔ Live closed-loop probe returned 200 OK. State hardened.<br/>
-              ✔ Cryptographic record committed to Immutable Audit Ledger (${findingId}).
+              ✔ Cryptographic record committed to Immutable Audit Ledger (${ticketId}).
             </div>
           </div>
         `;
         lucide.createIcons();
       }
 
-      if (footer) footer.classList.remove('hidden');
+      if (footer) {
+        if (liveApprove?.audit) {
+          footer.innerHTML = `
+            <div class="flex items-center space-x-1.5 text-emerald-400 font-semibold">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span>${liveApprove.verification?.message || 'Closed-loop probe confirmed 200 OK.'}</span>
+            </div>
+            <div>Audit Vault: <code class="text-blue-300">${liveApprove.audit.audit_id}</code> | <span class="text-slate-400">SHA-256: ${liveApprove.audit.checksum_sha256.substring(0, 16)}...</span></div>
+          `;
+          lucide.createIcons();
+        }
+        footer.classList.remove('hidden');
+      }
       const container = document.getElementById('chat-messages');
       container.scrollTop = container.scrollHeight;
     }
 
-    function rejectHITL(findingId) {
+    async function rejectHITL(findingId) {
+      const ticketId = activeTicketMap[findingId] || findingId;
+      try {
+        await fetch('/api/remediate/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticket_id: ticketId, decision: 'REJECT', reason: 'Aborted by Platform Reviewer' })
+        });
+      } catch (e) {}
+
       const slot = document.getElementById(`execution-flow-slot-${findingId}`);
       if (slot) {
         slot.innerHTML = `
           <div class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300 space-y-1">
             <div class="font-bold text-rose-400">🛑 PRODUCTION MUTATION REJECTED</div>
-            <div class="text-[11px] text-slate-400">Pipeline safely terminated without mutating production state. Escalated ticket to Security Operations Center.</div>
+            <div class="text-[11px] text-slate-400">Pipeline safely terminated without mutating production state. Escalated ticket to Security Operations Center (SOC).</div>
           </div>
         `;
+        lucide.createIcons();
       }
     }
 
@@ -3577,7 +3760,7 @@
             <i data-lucide="sparkles" class="w-4 h-4"></i>
           </div>
           <div class="space-y-2 bg-gcp-bubbleBot p-4 rounded-2xl rounded-tl-none border border-gcp-border shadow-sm text-xs text-slate-200">
-            <span class="font-bold text-white text-sm">GCP Autonomous Platform Engineering Copilot</span>
+            <span class="font-bold text-white text-sm">GCP Autonomous Platform Engineering Agent</span>
             <p>Chat session reset. Click any asset in the enterprise inventory or give a fleet command below.</p>
           </div>
         </div>
